@@ -1,0 +1,19 @@
+{
+"name": "eternal-love-cinema-vip-pwa",
+"version": "3.0.0",
+"description": "Ultra-Luxury Stealth Real-time Synced Cinematic PWA for Abu Ahad and Um Alara",
+"main": "index.js",
+"scripts": {
+"start": "node index.js"
+},
+"dependencies": {
+"express": "^4.19.2",
+"socket.io": "^4.7.5"
+},
+"engines": {
+"node": ">=18.0.0"
+},
+"private": true,
+"author": "Gemini Ultra VIP",
+"license": "MIT"
+}
