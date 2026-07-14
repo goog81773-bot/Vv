@@ -164,10 +164,17 @@
             <p class="text-gray-400 text-sm font-semibold">المساحة المشتركة الفاخرة</p>
         </div>
         <div class="glass-panel p-8 w-full max-w-sm rounded-[2rem] flex flex-col gap-5 shadow-2xl">
-            <button onclick="login('abouahad')" class="btn-premium-rose py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
+            
+            <!-- إدخال كلمة المرور المخفي لأبو عاهد -->
+            <div id="passwordBlock" class="hidden flex-col gap-3">
+                <input type="password" id="vipPassword" placeholder="أدخل كلمة المرور (tarzan)..." class="w-full bg-black/50 border border-rose-500/50 rounded-xl px-4 py-3 text-center text-white font-bold focus:border-rose-500 transition-all">
+                <button onclick="verifyPasswordAndLogin()" class="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white py-3 rounded-xl font-black text-sm shadow-lg transition-all">تأكيد الدخول المشفّر 🔒</button>
+            </div>
+            
+            <button id="abouahadBtn" onclick="showPasswordPrompt()" class="btn-premium-rose py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
                 <i class="fa fa-user-circle text-2xl"></i> دخول أبو عاهد 👑
             </button>
-            <button onclick="login('umalara')" class="btn-premium-rose py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #e0115f, #ff69b4);">
+            <button id="umalaraBtn" onclick="login('umalara')" class="btn-premium-rose py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #e0115f, #ff69b4);">
                 <i class="fa fa-heart text-2xl"></i> دخول أم الارا 🌸
             </button>
         </div>
@@ -210,29 +217,38 @@
             </div>
 
             <!-- القسم الثاني: الكاميرات المباشرة (تحت الفيديو لتشاهدها وتشاهد الفيلم) -->
-            <div class="camera-wrapper">
-                <!-- كاميرا الشريكة الأساسية بملء الحاوية -->
-                <video id="partnerCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay playsinline></video>
+            <div class="flex flex-col gap-4">
                 
-                <!-- غطاء الإغلاق الوهمي الخاص بالشريكة -->
-                <div id="partnerFakeMute" class="absolute inset-0 bg-[#070312] flex flex-col items-center justify-center text-rose-500 z-10 hidden">
-                    <i class="fa fa-eye-slash text-4xl mb-2 opacity-50"></i>
-                    <span class="text-xs font-bold text-gray-500">الكاميرا مغلقة</span>
-                </div>
+                <!-- كاميرا الشريكة الأساسية بملء الحاوية (مستقلة وبدون أي تشويش) -->
+                <div class="relative w-full h-[360px] bg-[#05020a] rounded-3xl overflow-hidden border-2 border-rose-500/20 shadow-[0_10px_40px_rgba(255,45,85,0.15)]">
+                    <video id="partnerCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay playsinline></video>
+                    
+                    <!-- غطاء الإغلاق الوهمي الخاص بالشريكة -->
+                    <div id="partnerFakeMute" class="absolute inset-0 bg-[#070312] flex flex-col items-center justify-center text-rose-500 z-10 hidden">
+                        <i class="fa fa-eye-slash text-5xl mb-3 opacity-50"></i>
+                        <span class="text-sm font-bold text-gray-500">الكاميرا مغلقة</span>
+                    </div>
 
-                <!-- الكاميرا المحلية العائمة (أنت) -->
-                <div class="my-floating-cam-frame">
-                    <video id="myCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay muted playsinline></video>
-                    <div id="myFakeMute" class="absolute inset-0 bg-[#111] flex flex-col items-center justify-center text-rose-500 z-30 hidden">
-                        <i class="fa fa-ban text-2xl"></i>
+                    <!-- زر التفاعل العائم على كاميرا الشريكة فقط -->
+                    <div class="absolute right-4 top-4 z-30">
+                        <button onclick="sendLove()" class="w-12 h-12 rounded-full btn-premium-rose flex items-center justify-center text-xl shadow-xl"><i class="fa fa-heart"></i></button>
                     </div>
                 </div>
 
-                <!-- أزرار التفاعل العائمة على الكاميرا -->
-                <div class="absolute right-3 top-3 flex flex-col gap-3 z-30">
-                    <button onclick="sendLove()" class="w-10 h-10 rounded-full btn-premium-rose flex items-center justify-center text-lg shadow-xl"><i class="fa fa-heart"></i></button>
-                    <button onclick="toggleMyCam()" id="myCamBtn" class="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-sm"><i class="fa fa-video-camera"></i></button>
-                    <button onclick="toggleMyMic()" id="myMicBtn" class="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-sm"><i class="fa fa-microphone"></i></button>
+                <!-- الكاميرا المحلية العائمة (أنت) - أسفل الشريكة لمنع التداخل تماماً -->
+                <div class="flex items-end justify-between px-2">
+                    <div class="relative w-[120px] h-[160px] bg-[#111] rounded-2xl overflow-hidden border-2 border-green-500/30 shadow-2xl">
+                        <video id="myCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay muted playsinline></video>
+                        <div id="myFakeMute" class="absolute inset-0 bg-[#111] flex flex-col items-center justify-center text-rose-500 z-30 hidden">
+                            <i class="fa fa-ban text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- أزرار التحكم بالكاميرا والصوت الخاصة بك (بجانب كاميرتك بالأسفل) -->
+                    <div class="flex flex-col gap-4 mb-2">
+                        <button onclick="toggleMyCam()" id="myCamBtn" class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-xl shadow-lg"><i class="fa fa-video-camera"></i></button>
+                        <button onclick="toggleMyMic()" id="myMicBtn" class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-xl shadow-lg"><i class="fa fa-microphone"></i></button>
+                    </div>
                 </div>
             </div>
 
@@ -262,6 +278,7 @@
         let ytPlayer = null;
         let isYtReady = false;
         let activePlayer = 'none';
+        let currentPlayingUrl = '';
 
         // متغيرات منع التقطيع
         let isSyncing = false; 
@@ -406,6 +423,24 @@
             }
         });
 
+        // --- دوال التحقق من كلمة المرور السريّة ---
+        function showPasswordPrompt() {
+            document.getElementById('abouahadBtn').classList.add('hidden');
+            document.getElementById('umalaraBtn').classList.add('hidden');
+            document.getElementById('passwordBlock').classList.remove('hidden');
+            document.getElementById('passwordBlock').classList.add('flex');
+        }
+
+        function verifyPasswordAndLogin() {
+            const pass = document.getElementById('vipPassword').value;
+            if(pass === 'tarzan') {
+                login('abouahad');
+            } else {
+                showToast('كلمة المرور خاطئة، حاول مجدداً', '❌');
+                document.getElementById('vipPassword').value = '';
+            }
+        }
+
         const mainVid = document.getElementById('mainVid');
         
         function emitCinemaState() {
@@ -441,6 +476,8 @@
         function startVideo() {
             const url = document.getElementById('vidLink').value.trim();
             if(!url) return;
+            
+            currentPlayingUrl = url;
             
             document.getElementById('vidPlaceholder').style.display = 'none';
             mainVid.classList.add('hidden');
@@ -488,7 +525,8 @@
             
             document.getElementById('vidLink').value = state.videoUrl;
             
-            if (activePlayer !== state.playerType || (activePlayer === 'html5' && mainVid.src !== state.videoUrl)) {
+            // تحقق من الرابط: إذا تم إرسال رابط جديد تماماً، نقوم بتحميله مباشرة للطرفين بدلاً من البحث في القديم
+            if (currentPlayingUrl !== state.videoUrl) {
                 startVideo();
             } else {
                 if (activePlayer === 'html5') {
